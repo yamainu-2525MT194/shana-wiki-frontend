@@ -19,7 +19,7 @@ function LoginPage() {
       params.append('password', password);
 
       // axiosを使って、バックエンドにPOSTリクエストを送信
-      const response = await axios.post('https://backend-api-1060579851059.asia-northeast1.run.app', params);
+      const response = await axios.post('https://backend-api-1060579851059.asia-northeast1.run.app/login', params);
 
       // 成功した場合の処理
       const accessToken = response.data.access_token;
