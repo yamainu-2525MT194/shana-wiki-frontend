@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // axiosをインポート
+import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
+  const navigate = useNavigate();
   // 入力されたメールアドレスとパスワードを記憶するための変数
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,6 +33,8 @@ function LoginPage() {
 
       // ここでログイン後のページに移動する処理を後で追加します
       // window.location.href = '/dashboard';
+
+      navigate('/dashboard'); // ← ★★★ 3. ログイン成功後、ダッシュボードへ案内 ★★★
 
     } catch (err) {
       // 失敗した場合の処理
