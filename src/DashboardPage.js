@@ -21,7 +21,7 @@ function DashboardPage() {
 
         // バックエンドの /users/me APIに問い合わせる
         // ★重要★ 通行証をヘッダーに付けて送信する
-        const response = await axios.get('https://backend-api-....run.app/users/me', {
+        const response = await axios.get('https://backend-api-1060579851059.asia-northeast1.run.app/users/me', {
           headers: {
             Authorization: `Bearer ${token}`
           }
