@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  Container, Typography, Box, Paper, List, ListItem, ListItemButton, ListItemText 
-} from '@mui/material'; // MUIの部品を追加
+  Container, Typography, Box, TextField, Button, // ← ★★★ここに 'Button' を追加★★★
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper 
+} from '@mui/material';
 
 function DashboardPage() {
   const [user, setUser] = useState(null);
