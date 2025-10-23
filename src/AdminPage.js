@@ -7,6 +7,13 @@ function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // --- ↓↓↓ 新規ユーザーフォーム用の変数を追加 ↓↓↓ ---
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserDepartmentId, setNewUserDepartmentId] = useState('1'); // デフォルトを1に
+  // --- ↑↑↑ 新規ユーザーフォーム用の変数を追加 ↑↑↑ ---
+
   // このページが初めて表示された時に、一度だけ実行される処理
   useEffect(() => {
     const fetchUsers = async () => {
@@ -78,6 +85,36 @@ function AdminPage() {
     }
   };
 
+  // --- ↓↓↓ 新規ユーザー作成処理を追加 ↓↓↓ ---
+  const handleCreateUser = async (e) => {
+    e.preventDefault(); // フォームのデフォルト送信をキャンセル
+    try {
+      const token = localStorage.getItem('accessToken');
+      const newUser = {
+        name: newUserName,
+        email: newUserEmail,
+        password: newUserPassword,
+        department_id: parseInt(newUserDepartmentId)
+      };
+      
+      await axios.post(`${API_URL}/users/`, newUser, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      alert('新しいユーザーを作成しました！');
+      // フォームをリセット
+      setNewUserName('');
+      setNewUserEmail('');
+      setNewUserPassword('');
+      // ユーザー一覧を再取得して画面を更新
+      fetchUsers();
+    } catch (err) {
+      console.error("ユーザーの作成に失敗しました:", err);
+      alert("ユーザーの作成に失敗しました。メールアドレスが重複している可能性があります。");
+    }
+  };
+  // --- ↑↑↑ 新規ユーザー作成処理を追加 ↑↑↑ ---
+
   if (loading) {
     return <p>ユーザー情報を読み込み中...</p>;
   }
@@ -89,7 +126,32 @@ function AdminPage() {
   return (
     <div>
       <h1>管理者ダッシュボード</h1>
-      <p>ここでユーザーの管理を行います。</p>
+{/* --- ↓↓↓ 新規ユーザー登録フォーム ↓↓↓ --- */}
+      <div style={{ margin: '20px 0', padding: '20px', border: '1px solid white' }}>
+        <h3>新規ユーザー登録</h3>
+        <form onSubmit={handleCreateUser}>
+          <div style={{ marginBottom: '10px' }}>
+            <label>名前: </label>
+            <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} required />
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <label>Email: </label>
+            <input type="email" value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} required />
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <label>パスワード: </label>
+            <input type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} required />
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <label>部署ID: </label>
+            <input type="number" value={newUserDepartmentId} onChange={(e) => setNewUserDepartmentId(e.target.value)} required />
+          </div>
+          <button type="submit">ユーザーを作成</button>
+        </form>
+      </div>
+      {/* --- ↑↑↑ 新規ユーザー登録フォーム ↑↑↑ --- */}
+
+      <h2>既存ユーザー一覧</h2>
 
       {/* ユーザー一覧のテーブル */}
       <table border="1" style={{ marginTop: '20px', width: '100%' }}>
