@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+  Container, Typography, Box, TextField, Button, 
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper 
+} from '@mui/material';
 
 function AdminPage() {
   const [users, setUsers] = useState([]);
@@ -115,82 +119,93 @@ function AdminPage() {
   if (error) { return <p style={{ color: 'red' }}>{error}</p>; }
 
   return (
-    <div>
-      <h1>管理者ダッシュボード</h1>
-      
-      <div style={{ margin: '20px 0', padding: '20px', border: '1px solid white' }}>
-        <h3>新規ユーザー登録</h3>
-        <form onSubmit={handleCreateUser}>
-          {/* ... (フォーム部分は変更なし) ... */}
-          <div style={{ marginBottom: '10px' }}>
-            <label>名前: </label> <input type="text" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} required />
-          </div>
-          <div style={{ marginBottom: '10px' }}>
-            <label>Email: </label> <input type="email" value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} required />
-          </div>
-          <div style={{ marginBottom: '10px' }}>
-            <label>パスワード: </label> <input type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} required />
-          </div>
-          <div style={{ marginBottom: '10px' }}>
-            <label>部署ID: </label> <input type="number" value={newUserDepartmentId} onChange={(e) => setNewUserDepartmentId(e.target.value)} required />
-          </div>
-          <button type="submit">ユーザーを作成</button>
-        </form>
-      </div>
+    // Containerで全体を囲み、中央に配置
+    <Container maxWidth="lg">
+      <Box sx={{ my: 4 }}> {/* myはmargin-top/bottom, sxはスタイル指定 */}
+        <Typography variant="h4" component="h1" gutterBottom>
+          管理者ダッシュボード
+        </Typography>
 
-      <div style={{ margin: '20px 0', padding: '20px', border: '1px solid white' }}>
-        <h3>新規部署登録</h3>
-        <form onSubmit={handleCreateDepartment}>
-           {/* ... (フォーム部分は変更なし) ... */}
-           <div style={{ marginBottom: '10px' }}>
-             <label>部署名: </label> <input type="text" value={newDepartmentName} onChange={(e) => setNewDepartmentName(e.target.value)} required />
-           </div>
-           <button type="submit">部署を作成</button>
-        </form>
-      </div>
+        {/* --- 2つのフォームを横並びにするためのBox --- */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+          {/* --- 新規ユーザー登録フォーム --- */}
+          <Paper component="form" onSubmit={handleCreateUser} sx={{ p: 2, flex: 1 }}>
+            <Typography variant="h6">新規ユーザー登録</Typography>
+            <TextField label="名前" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} fullWidth margin="normal" required />
+            <TextField label="Email" type="email" value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} fullWidth margin="normal" required />
+            <TextField label="パスワード" type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} fullWidth margin="normal" required />
+            <TextField label="部署ID" type="number" value={newUserDepartmentId} onChange={(e) => setNewUserDepartmentId(e.target.value)} fullWidth margin="normal" required />
+            <Button type="submit" variant="contained">ユーザーを作成</Button>
+          </Paper>
 
-      <h2>既存部署一覧</h2>
-      <table border="1" style={{ marginTop: '20px', width: '100%' }}>
-         {/* ... (テーブル部分は変更なし) ... */}
-        <thead>
-          <tr><th>ID</th><th>部署名</th><th>操作</th></tr>
-        </thead>
-        <tbody>
-          {departments.map(dep => (<tr key={dep.id}><td>{dep.id}</td><td>{dep.name}</td><td><button onClick={() => handleDeleteDepartment(dep.id)}>削除</button></td></tr>))}
-        </tbody>
-      </table>
+          {/* --- 新規部署登録フォーム --- */}
+          <Paper component="form" onSubmit={handleCreateDepartment} sx={{ p: 2, flex: 1 }}>
+            <Typography variant="h6">新規部署登録</Typography>
+            <TextField label="部署名" value={newDepartmentName} onChange={(e) => setNewDepartmentName(e.target.value)} fullWidth margin="normal" required />
+            <Button type="submit" variant="contained">部署を作成</Button>
+          </Paper>
+        </Box>
 
-      <h2>既存ユーザー一覧</h2>
-      <table border="1" style={{ marginTop: '20px', width: '100%' }}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>名前</th>
-            <th>Email</th>
-            <th>役割</th>
-            <th>部署ID</th>
-            <th>操作</th> {/* ★★★ 抜けていたヘッダーを追加 ★★★ */}
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(user => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
-              <td>{user.department_id}</td>
-              <td>
-                {user.role !== 'admin' && (
-                  <button onClick={() => handleUpdateRole(user.id, 'admin')}>管理者に昇格</button>
-                )}
-                <button onClick={() => handleDeleteUser(user.id)} style={{ marginLeft: '5px' }}>削除</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        {/* --- 部署一覧テーブル --- */}
+        <Typography variant="h6" gutterBottom>既存部署一覧</Typography>
+        <TableContainer component={Paper} sx={{ mb: 4 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>部署名</TableCell>
+                <TableCell align="right">操作</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {departments.map((dep) => (
+                <TableRow key={dep.id}>
+                  <TableCell>{dep.id}</TableCell>
+                  <TableCell>{dep.name}</TableCell>
+                  <TableCell align="right">
+                    <Button variant="outlined" color="secondary" onClick={() => handleDeleteDepartment(dep.id)}>削除</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* --- ユーザー一覧テーブル --- */}
+        <Typography variant="h6" gutterBottom>既存ユーザー一覧</Typography>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>名前</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>役割</TableCell>
+                <TableCell>部署ID</TableCell>
+                <TableCell align="right">操作</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.id}</TableCell>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>{user.department_id}</TableCell>
+                  <TableCell align="right">
+                    {user.role !== 'admin' && (
+                      <Button variant="contained" size="small" onClick={() => handleUpdateRole(user.id, 'admin')}>管理者に昇格</Button>
+                    )}
+                    <Button variant="outlined" color="secondary" size="small" sx={{ ml: 1 }} onClick={() => handleDeleteUser(user.id)}>削除</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Container>
   );
 }
 
