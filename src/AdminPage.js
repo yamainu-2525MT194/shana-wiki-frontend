@@ -40,6 +40,44 @@ function AdminPage() {
     fetchUsers();
   }, []); // []が空なので、初回の一度しか実行されない
 
+  // ユーザーを削除する処理
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm(`本当にユーザーID: ${userId} を削除しますか？`)) {
+      try {
+        const token = localStorage.getItem('accessToken');
+        await axios.delete(`https://backend-api-....run.app/users/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        // 画面から削除されたユーザーを即座に消す
+        setUsers(users.filter(user => user.id !== userId));
+        alert(`ユーザーID: ${userId} を削除しました。`);
+      } catch (err) {
+        console.error("ユーザーの削除に失敗しました:", err);
+        alert("ユーザーの削除に失敗しました。");
+      }
+    }
+  };
+
+  // ユーザーの役割を変更する処理
+  const handleUpdateRole = async (userId, newRole) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      // FastAPIのPUTリクエストではURLパラメータでデータを送る
+      await axios.put(`https://backend-api-....run.app/users/${userId}/role?role=${newRole}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // 画面上のユーザーの役割を即座に更新する
+      setUsers(users.map(user =>
+        user.id === userId ? { ...user, role: newRole } : user
+      ));
+      alert(`ユーザーID: ${userId} の役割を ${newRole} に変更しました。`);
+    } catch (err) {
+      console.error("役割の更新に失敗しました:", err);
+      alert("役割の更新に失敗しました。");
+    }
+  };
+
   if (loading) {
     return <p>ユーザー情報を読み込み中...</p>;
   }
@@ -72,6 +110,16 @@ function AdminPage() {
               <td>{user.email}</td>
               <td>{user.role}</td>
               <td>{user.department_id}</td>
+              <td>
+                {user.role !== 'admin' && (
+                  <button onClick={() => handleUpdateRole(user.id, 'admin')}>
+                    管理者に昇格
+                  </button>
+                )}
+                <button onClick={() => handleDeleteUser(user.id)} style={{ marginLeft: '5px' }}>
+                  削除
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
