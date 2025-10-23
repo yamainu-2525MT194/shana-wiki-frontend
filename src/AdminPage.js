@@ -4,6 +4,7 @@ import axios from 'axios';
 function AdminPage() {
   // 取得したユーザーの一覧を記憶するための変数
   const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]); // ← 部署一覧用の変数を追加
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -12,12 +13,14 @@ function AdminPage() {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserDepartmentId, setNewUserDepartmentId] = useState('1'); // デフォルトを1に
-  // --- ↑↑↑ 新規ユーザーフォーム用の変数を追加 ↑↑↑ ---
+  const [newDepartmentName, setNewDepartmentName] = useState('');
+  // --- ↑↑↑ 新規部署フォーム用の変数を追加 ↑↑↑ ---
 
   const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
 
   // このページが初めて表示された時に、一度だけ実行される処理
-  const fetchUsers = async () => {
+  useEffect(() => {
+    const fetchUsers = async () => {
       try {
         // ブラウザに保管されている通行証(トークン)を取得
         const token = localStorage.getItem('accessToken');
@@ -41,8 +44,6 @@ function AdminPage() {
         setLoading(false);
       }
     };
-
-    useEffect(() => {
     fetchUsers();
   }, []);
 
@@ -114,6 +115,41 @@ function AdminPage() {
   };
   // --- ↑↑↑ 新規ユーザー作成処理を追加 ↑↑↑ ---
 
+  // --- ↓↓↓ 部署のCRUD処理を追加 ↓↓↓ ---
+  const handleCreateDepartment = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('accessToken');
+      await axios.post(`${API_URL}/departments/`, { name: newDepartmentName }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('新しい部署を作成しました！');
+      setNewDepartmentName('');
+      // データを再取得して画面を更新
+      setLoading(true);
+      // Simulating a refetch. In a real app, you'd call fetchData() again.
+      window.location.reload(); 
+    } catch (err) {
+      alert("部署の作成に失敗しました。");
+    }
+  };
+
+  const handleDeleteDepartment = async (departmentId) => {
+    if (window.confirm(`本当に部署ID: ${departmentId} を削除しますか？\nこの部署に所属するユーザーがいる場合、エラーになります。`)) {
+      try {
+        const token = localStorage.getItem('accessToken');
+        await axios.delete(`${API_URL}/departments/${departmentId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDepartments(departments.filter(dep => dep.id !== departmentId));
+        alert(`部署ID: ${departmentId} を削除しました。`);
+      } catch (err) {
+        alert("部署の削除に失敗しました。所属ユーザーがいないか確認してください。");
+      }
+    }
+  };
+  // --- ↑↑↑ 部署のCRUD処理を追加 ↑↑↑ ---
+
   if (loading) {
     return <p>ユーザー情報を読み込み中...</p>;
   }
@@ -125,7 +161,7 @@ function AdminPage() {
   return (
     <div>
       <h1>管理者ダッシュボード</h1>
-{/* --- ↓↓↓ 新規ユーザー登録フォーム ↓↓↓ --- */}
+    {/* --- ↓↓↓ 新規ユーザー登録フォーム ↓↓↓ --- */}
       <div style={{ margin: '20px 0', padding: '20px', border: '1px solid white' }}>
         <h3>新規ユーザー登録</h3>
         <form onSubmit={handleCreateUser}>
@@ -149,6 +185,45 @@ function AdminPage() {
         </form>
       </div>
       {/* --- ↑↑↑ 新規ユーザー登録フォーム ↑↑↑ --- */}
+
+      {/* --- ↓↓↓ 新規部署登録フォームを追加 ↓↓↓ --- */}
+      <div style={{ margin: '20px 0', padding: '20px', border: '1px solid white' }}>
+        <h3>新規部署登録</h3>
+        <form onSubmit={handleCreateDepartment}>
+          <div style={{ marginBottom: '10px' }}>
+            <label>部署名: </label>
+            <input type="text" value={newDepartmentName} onChange={(e) => setNewDepartmentName(e.target.value)} required />
+          </div>
+          <button type="submit">部署を作成</button>
+        </form>
+      </div>
+      {/* --- ↑↑↑ 新規部署登録フォームを追加 ↑↑↑ --- */}
+
+      {/* --- ↓↓↓ 部署一覧テーブルを追加 ↓↓↓ --- */}
+      <h2>既存部署一覧</h2>
+      <table border="1" style={{ marginTop: '20px', width: '100%' }}>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>部署名</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {departments.map(dep => (
+            <tr key={dep.id}>
+              <td>{dep.id}</td>
+              <td>{dep.name}</td>
+              <td>
+                <button onClick={() => handleDeleteDepartment(dep.id)}>
+                  削除
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {/* --- ↑↑↑ 部署一覧テーブルを追加 ↑↑↑ --- */}
 
       <h2>既存ユーザー一覧</h2>
 
