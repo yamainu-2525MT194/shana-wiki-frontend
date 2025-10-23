@@ -4,11 +4,11 @@ import axios from 'axios';
 import { Container, Typography, Box, Paper, CircularProgress } from '@mui/material';
 
 function WikiPage() {
-  const { pageId } = useParams(); // Get the page ID from the URL
+  const { pageId } = useParams(); // URLからページのIDを取得
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★ Set your backend URL
+  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
 
   useEffect(() => {
     const fetchPage = async () => {
@@ -19,20 +19,20 @@ function WikiPage() {
         });
         setPage(response.data);
       } catch (error) {
-        console.error("Failed to fetch page:", error);
+        console.error("ページの取得に失敗しました:", error);
       } finally {
         setLoading(false);
       }
     };
     fetchPage();
-  }, [pageId]);
+  }, [pageId]); // pageIdが変わるたびにデータを再取得
 
   if (loading) {
-    return <CircularProgress />;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
   }
 
   if (!page) {
-    return <Typography>Page not found.</Typography>;
+    return <Typography>ページが見つかりません。</Typography>;
   }
 
   return (
@@ -42,8 +42,10 @@ function WikiPage() {
           {page.title}
         </Typography>
         <Paper sx={{ p: 3 }}>
-          {/* This will render the content as plain text for now */}
-          <Typography sx={{ whiteSpace: 'pre-wrap' }}>{page.content}</Typography>
+          {/* whiteSpace: 'pre-wrap' で改行やスペースをそのまま表示 */}
+          <Typography sx={{ whiteSpace: 'pre-wrap' }}>
+            {page.content}
+          </Typography>
         </Paper>
       </Box>
     </Container>
