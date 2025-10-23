@@ -4,6 +4,7 @@ import LoginPage from './LoginPage';
 import DashboardPage from './DashboardPage';
 import AdminPage from './AdminPage'; // ← ★★★この行を追加★★★
 import './App.css';
+import WikiPage from './WikiPage'; // ← Add this import
 
 function App() {
   return (
@@ -13,12 +14,11 @@ function App() {
           <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/admin" element={<AdminPage />} /> {/* ← ★★★この行を追加★★★ */}
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/pages/:pageId" element={<WikiPage />} /> {/* ← Add this route */}
           </Routes>
         </header>
       </div>
     </Router>
   );
 }
-
-export default App;

@@ -1,60 +1,96 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+// --- ↓↓↓ MUIの部品を正しく全てインポート ↓↓↓ ---
+import {
+  Container, Typography, Box, Paper, List, ListItem, ListItemButton, ListItemText, Button, CircularProgress
+} from '@mui/material';
+// --- ↑↑↑ MUIの部品を正しく全てインポート ↑↑↑ ---
 
 function DashboardPage() {
-  // ログインしているユーザーの情報を記憶するための変数
   const [user, setUser] = useState(null);
+  const [pages, setPages] = useState([]); // ← ページ一覧を記憶する変数
   const [loading, setLoading] = useState(true);
 
-  // このページが初めて表示された時に、一度だけ実行される処理
+  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
+
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       try {
-        // ブラウザに保管されている通行証(トークン)を取得
         const token = localStorage.getItem('accessToken');
         if (!token) {
-          // トークンがなければ処理を中断
           setLoading(false);
           return;
         }
+        const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
-        // バックエンドの /users/me APIに問い合わせる
-        // ★重要★ 通行証をヘッダーに付けて送信する
-        const response = await axios.get('https://backend-api-1060579851059.asia-northeast1.run.app/users/me', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        // ★★★ ユーザー情報とページ一覧を同時に取得する ★★★
+        const [userResponse, pagesResponse] = await Promise.all([
+          axios.get(`${API_URL}/users/me`, authHeaders),
+          axios.get(`${API_URL}/pages/`, authHeaders)
+        ]);
+        
+        setUser(userResponse.data);
+        setPages(pagesResponse.data);
 
-        // 返ってきたユーザー情報を記憶する
-        setUser(response.data);
       } catch (error) {
-        console.error("ユーザー情報の取得に失敗しました:", error);
+        console.error("データの取得に失敗しました:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUser();
-  }, []); // []が空なので、初回の一度しか実行されない
+    fetchData();
+  }, []);
 
   if (loading) {
-    return <p>読み込み中...</p>;
+    // MUIの見栄えの良いローディング表示
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <div>
-      <h1>ようこそ、{user ? user.name : 'ゲスト'}さん！</h1>
-      <p>ここはログインしたユーザーだけが見られるページです。</p>
-      <br />
-      <nav>
-        {/* ★重要★ userが存在し、かつroleが'admin'の場合のみリンクを表示する */}
+    <Container maxWidth="md">
+      <Box sx={{ my: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          ようこそ、{user ? user.name : 'ゲスト'}さん！
+        </Typography>
+        
         {user && user.role === 'admin' && (
-          <Link to="/admin">管理者ページへ</Link>
+          <Button component={Link} to="/admin" variant="contained" color="secondary" sx={{ mb: 4 }}>
+            管理者ページへ
+          </Button>
         )}
-      </nav>
-    </div>
+
+        {/* --- ↓↓↓ ここに .map function があります ↓↓↓ --- */}
+        <Typography variant="h5" component="h2" gutterBottom>
+          Wikiページ一覧
+        </Typography>
+        <Paper>
+          <List>
+            {pages.length > 0 ? (
+              pages.map((page) => (
+                <ListItem key={page.id} disablePadding>
+                  {/* ★★★ ここをクリック可能なリンクに修正 ★★★ */}
+                  <ListItemButton component={Link} to={`/pages/${page.id}`}>
+                    <ListItemText primary={page.title} />
+                  </ListItemButton>
+                </ListItem>
+              ))
+            ) : (
+              <ListItem>
+                <ListItemText primary="まだページがありません。" />
+              </ListItem>
+            )}
+          </List>
+        </Paper>
+        {/* --- ↑↑↑ ここまで --- */}
+
+      </Box>
+    </Container>
   );
 }
 
