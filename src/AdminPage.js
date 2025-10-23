@@ -52,7 +52,7 @@ function AdminPage() {
     if (window.confirm(`本当にユーザーID: ${userId} を削除しますか？`)) {
       try {
         const token = localStorage.getItem('accessToken');
-        await axios.delete(`https://backend-api-....run.app/users/${userId}`, {
+        await axios.delete(`https://backend-api-1060579851059.asia-northeast1.run.app/users/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         // 画面から削除されたユーザーを即座に消す
@@ -70,7 +70,7 @@ function AdminPage() {
     try {
       const token = localStorage.getItem('accessToken');
       // FastAPIのPUTリクエストではURLパラメータでデータを送る
-      await axios.put(`https://backend-api-....run.app/users/${userId}/role?role=${newRole}`, {}, {
+      await axios.put(`https://backend-api-1060579851059.asia-northeast1.run.app/users/${userId}/role?role=${newRole}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
