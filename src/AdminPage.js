@@ -14,9 +14,10 @@ function AdminPage() {
   const [newUserDepartmentId, setNewUserDepartmentId] = useState('1'); // デフォルトを1に
   // --- ↑↑↑ 新規ユーザーフォーム用の変数を追加 ↑↑↑ ---
 
+  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
+
   // このページが初めて表示された時に、一度だけ実行される処理
-  useEffect(() => {
-    const fetchUsers = async () => {
+  const fetchUsers = async () => {
       try {
         // ブラウザに保管されている通行証(トークン)を取得
         const token = localStorage.getItem('accessToken');
@@ -28,14 +29,11 @@ function AdminPage() {
 
         // バックエンドの /users/ APIに問い合わせる
         // ★重要★ 通行証をヘッダーに付けて送信する
-        const response = await axios.get('https://backend-api-1060579851059.asia-northeast1.run.app/users/', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        // 返ってきたユーザー一覧を記憶する
-        setUsers(response.data);
+        const response = await axios.get(`${API_URL}/users/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+       // 返ってきたユーザー一覧を記憶する
+      setUsers(response.data);
       } catch (err) {
         console.error("ユーザー一覧の取得に失敗しました:", err);
         setError("ユーザー一覧の取得に失敗しました。管理者権限がありません。");
@@ -44,15 +42,16 @@ function AdminPage() {
       }
     };
 
+    useEffect(() => {
     fetchUsers();
-  }, []); // []が空なので、初回の一度しか実行されない
+  }, []);
 
   // ユーザーを削除する処理
   const handleDeleteUser = async (userId) => {
     if (window.confirm(`本当にユーザーID: ${userId} を削除しますか？`)) {
       try {
         const token = localStorage.getItem('accessToken');
-        await axios.delete(`https://backend-api-1060579851059.asia-northeast1.run.app/users/${userId}`, {
+        await axios.delete(`${API_URL}/users/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         // 画面から削除されたユーザーを即座に消す
@@ -70,7 +69,7 @@ function AdminPage() {
     try {
       const token = localStorage.getItem('accessToken');
       // FastAPIのPUTリクエストではURLパラメータでデータを送る
-      await axios.put(`https://backend-api-1060579851059.asia-northeast1.run.app/users/${userId}/role?role=${newRole}`, {}, {
+      await axios.put(`${API_URL}/users/${userId}/role?role=${newRole}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
