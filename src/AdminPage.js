@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Typography, Box, TextField, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function AdminPage() {
   const [users, setUsers] = useState([]);
@@ -16,7 +16,7 @@ function AdminPage() {
   const [newUserDepartmentId, setNewUserDepartmentId] = useState('1');
   const [newDepartmentName, setNewDepartmentName] = useState('');
 
-  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
+  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app';
 
   // ページが表示された時にユーザーと部署の両方を取得する
   const fetchData = async () => {
@@ -25,6 +25,7 @@ function AdminPage() {
       const token = localStorage.getItem('accessToken');
       if (!token) {
         setError("ログインしていません。");
+        setLoading(false); // setLoadingをfalseにする
         return;
       }
       const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
@@ -49,6 +50,28 @@ function AdminPage() {
     fetchData();
   }, []);
 
+  // ユーザー作成
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('accessToken');
+      const newUser = {
+        name: newUserName,
+        email: newUserEmail,
+        password: newUserPassword,
+        department_id: parseInt(newUserDepartmentId)
+      };
+      await axios.post(`${API_URL}/users/`, newUser, { headers: { Authorization: `Bearer ${token}` } });
+      alert('新しいユーザーを作成しました！');
+      setNewUserName('');
+      setNewUserEmail('');
+      setNewUserPassword('');
+      fetchData();
+    } catch (err) {
+      alert("ユーザーの作成に失敗しました。メールアドレスが重複している可能性があります。");
+    }
+  };
+  
   // ユーザー削除
   const handleDeleteUser = async (userId) => {
     if (window.confirm(`本当にユーザーID: ${userId} を削除しますか？`)) {
@@ -99,27 +122,6 @@ function AdminPage() {
     }
   };
 
-  // ページ作成
-  const handleCreatePage = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('accessToken');
-      const currentUser = users.find(user => user.role === 'admin');
-      if (!currentUser) {
-        alert('ページを作成する管理者アカウントが見つかりません。');
-        return;
-      }
-      const newPage = {
-        title: newPageTitle, content: newPageContent, author_id: currentUser.id
-      };
-      await axios.post(`${API_URL}/pages/`, newPage, { headers: { Authorization: `Bearer ${token}` } });
-      alert('新しいWikiページを作成しました！');
-      setNewPageTitle(''); setNewPageContent('');
-    } catch (err) {
-      alert("ページの作成に失敗しました。");
-    }
-  };
-
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
   }
@@ -151,11 +153,11 @@ function AdminPage() {
             <Button type="submit" variant="contained">部署を作成</Button>
           </Paper>
           
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
             <Typography variant="h6">新規Wikiページ作成</Typography>
-              <Button component={Link} to="/pages/new" variant="contained" sx={{ mt: 2 }}>
+            <Button component={Link} to="/pages/new" variant="contained" sx={{ mt: 2 }}>
               エディタを開く
-              </Button>
+            </Button>
           </Paper>
         </Box>
 

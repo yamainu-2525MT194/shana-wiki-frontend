@@ -4,6 +4,7 @@ import LoginPage from './LoginPage';
 import DashboardPage from './DashboardPage';
 import AdminPage from './AdminPage';
 import WikiPage from './WikiPage'; // WikiPageもインポート
+import PageEditor from './PageEditor';
 import './App.css';
 
 function App() {
