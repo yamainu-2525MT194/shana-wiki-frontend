@@ -66,7 +66,7 @@ function PageEditor() {
       <Paper component="form" onSubmit={handleSave} sx={{ p: 2 }}>
         <TextField label="タイトル" value={title} onChange={(e) => setTitle(e.target.value)} fullWidth margin="normal" required />
         
-        {/* --- ↓↓↓ ここからレイアウト修正 ↓↓↓ --- */}
+     {/* --- ↓↓↓ ここからレイアウト修正 ↓↓↓ --- */}
         <Grid container spacing={2} sx={{ mt: 1 }}>
           {/* --- 左半分：Markdown入力欄 --- */}
           <Grid item xs={12} md={6}>
