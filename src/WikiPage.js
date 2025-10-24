@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 import { Container, Typography, Box, Paper, CircularProgress } from '@mui/material';
 
 function WikiPage() {
@@ -42,10 +43,9 @@ function WikiPage() {
           {page.title}
         </Typography>
         <Paper sx={{ p: 3 }}>
-          {/* whiteSpace: 'pre-wrap' で改行やスペースをそのまま表示 */}
-          <Typography sx={{ whiteSpace: 'pre-wrap' }}>
+          <ReactMarkdown>
             {page.content}
-          </Typography>
+          </ReactMarkdown>
         </Paper>
       </Box>
     </Container>
