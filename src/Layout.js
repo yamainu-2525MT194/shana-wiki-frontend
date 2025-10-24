@@ -1,0 +1,34 @@
+import React from 'react';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
+
+function Layout() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken'); // 通行証を削除
+    navigate('/'); // ログインページに移動
+  };
+
+  return (
+    <div>
+      {/* --- ヘッダー部分 --- */}
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component={Link} to="/dashboard" sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none' }}>
+            社内Wiki
+          </Typography>
+          <Button color="inherit" onClick={handleLogout}>ログアウト</Button>
+        </Toolbar>
+      </AppBar>
+
+      {/* --- ↓↓↓ 各ページの中身がここに表示される ↓↓↓ --- */}
+      <Container>
+        <Outlet />
+      </Container>
+      {/* --- ↑↑↑ 各ページの中身がここに表示される ↑↑↑ --- */}
+    </div>
+  );
+}
+
+export default Layout;
