@@ -60,6 +60,10 @@ function PageEditor() {
     }
   };
 
+  if (loading) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
+  }
+
   return (
     <Container maxWidth="xl"> {/* 横幅を広くする */}
       <Box sx={{ my: 4 }}>
