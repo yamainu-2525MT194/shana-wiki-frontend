@@ -26,7 +26,7 @@ function LoginPage() {
       // 成功した場合の処理
       const accessToken = response.data.access_token;
       console.log("ログイン成功:", accessToken);
-      alert("ログインに成功しました！この先のページはまだ開発中なので少々お待ちください");
+      // alert("ログインに成功しました！この先のページはまだ開発中なので少々お待ちください");
 
       // ★重要★ 受け取った通行証(トークン)をブラウザの安全な場所に保管
       localStorage.setItem('accessToken', accessToken);
