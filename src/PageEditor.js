@@ -8,11 +8,35 @@ function PageEditor() {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
 
   const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
 
+// ★★★ ページが表示された時に、ログインユーザーの情報を取得する ★★★
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await axios.get(`${API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error("ユーザー情報の取得に失敗しました:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!currentUser) {
+      alert("ユーザー情報が取得できていません。");
+      return;
+    }
+
     try {
       const token = localStorage.getItem('accessToken');
       // このページにアクセスできるのは管理者だけなので、author_idはバックエンド側で設定することも可能ですが、
