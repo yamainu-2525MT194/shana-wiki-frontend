@@ -9,6 +9,7 @@ function PageEditor() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
 
