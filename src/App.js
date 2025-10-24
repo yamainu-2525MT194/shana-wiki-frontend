@@ -17,6 +17,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/pages/new" element={<PageEditor />} />
+            <Route path="/pages/edit/:pageId" element={<PageEditor />} />
             <Route path="/pages/:pageId" element={<WikiPage />} />
           </Routes>
         </header>

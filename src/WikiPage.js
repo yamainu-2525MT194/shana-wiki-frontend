@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, LINK } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // useNavigateとLinkを追加
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
@@ -76,9 +76,9 @@ function WikiPage() {
             <Button variant="contained" color="secondary" onClick={handleDelete}>
               このページを削除
             </Button>
-            {/* <Button component={Link} to={`/pages/edit/${page.id}`} variant="contained" sx={{ ml: 2 }}>
+            <Button component={Link} to={`/pages/edit/${page.id}`} variant="contained" sx={{ ml: 2 }}>
               このページを編集
-            </Button> */}
+            </Button>
           </Box>
         )}
         {/* --- ↑↑↑ 管理者用ボタンを追加 ↑↑↑ --- */}
