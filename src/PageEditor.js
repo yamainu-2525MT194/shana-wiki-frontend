@@ -46,7 +46,7 @@ function PageEditor() {
         alert('ページを更新しました！');
         navigate(`/pages/${pageId}`);
       } else {
-        await axios.post(`${API__URL}/pages/`, pageData, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.post(`${API_URL}/pages/`, pageData, { headers: { Authorization: `Bearer ${token}` } });
         alert('新しいWikiページを作成しました！');
         navigate('/dashboard');
       }
