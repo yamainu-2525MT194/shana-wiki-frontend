@@ -1,5 +1,5 @@
-import React, { useState, useEffect, LINK } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // useNavigateとLinkを追加
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom'; // useNavigateとLinkを追加
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { Container, Typography, Box, Paper, CircularProgress, Button } from '@mui/material'; // Buttonを追加
