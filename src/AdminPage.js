@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Typography, Box, TextField, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 
 function AdminPage() {
   const [users, setUsers] = useState([]);
@@ -14,8 +15,6 @@ function AdminPage() {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserDepartmentId, setNewUserDepartmentId] = useState('1');
   const [newDepartmentName, setNewDepartmentName] = useState('');
-  const [newPageTitle, setNewPageTitle] = useState('');
-  const [newPageContent, setNewPageContent] = useState('');
 
   const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
 
@@ -49,23 +48,6 @@ function AdminPage() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  // ユーザー作成
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('accessToken');
-      const newUser = {
-        name: newUserName, email: newUserEmail, password: newUserPassword, department_id: parseInt(newUserDepartmentId)
-      };
-      await axios.post(`${API_URL}/users/`, newUser, { headers: { Authorization: `Bearer ${token}` } });
-      alert('新しいユーザーを作成しました！');
-      setNewUserName(''); setNewUserEmail(''); setNewUserPassword('');
-      fetchData();
-    } catch (err) {
-      alert("ユーザーの作成に失敗しました。メールアドレスが重複している可能性があります。");
-    }
-  };
 
   // ユーザー削除
   const handleDeleteUser = async (userId) => {
@@ -149,6 +131,9 @@ function AdminPage() {
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>管理者ダッシュボード</Typography>
+        <Button component={Link} to="/dashboard" variant="outlined" sx={{ mb: 2 }}>
+          ダッシュボードに戻る
+        </Button>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 4 }}>
           <Paper component="form" onSubmit={handleCreateUser} sx={{ p: 2 }}>
@@ -166,11 +151,11 @@ function AdminPage() {
             <Button type="submit" variant="contained">部署を作成</Button>
           </Paper>
           
-          <Paper component="form" onSubmit={handleCreatePage} sx={{ p: 2 }}>
+          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <Typography variant="h6">新規Wikiページ作成</Typography>
-            <TextField label="タイトル" value={newPageTitle} onChange={(e) => setNewPageTitle(e.target.value)} fullWidth margin="normal" required />
-            <TextField label="内容 (Markdown)" value={newPageContent} onChange={(e) => setNewPageContent(e.target.value)} fullWidth margin="normal" multiline rows={4} required />
-            <Button type="submit" variant="contained">ページを作成</Button>
+              <Button component={Link} to="/pages/new" variant="contained" sx={{ mt: 2 }}>
+              エディタを開く
+              </Button>
           </Paper>
         </Box>
 
