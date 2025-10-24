@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
-import { Container, Typography, Box, TextField, Button, Paper, Grid, CircularProgress } from '@mui/material';
+import { Typography, Box, TextField, Button, Paper, Grid, CircularProgress } from '@mui/material';
 
 function PageEditor() {
   const navigate = useNavigate();
