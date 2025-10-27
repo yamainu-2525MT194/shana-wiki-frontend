@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import api from './api';
 import {
   Container, Typography, Box, Button, CircularProgress, Paper,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 } from '@mui/material';
 
 function DashboardPage() {
