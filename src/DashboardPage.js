@@ -2,16 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from './api';
 import {
-  Container, Typography, Box, Button, CircularProgress, Grid, Card, CardContent, CardActionArea, Pagination, Paper
+  Container, Typography, Box, Button, CircularProgress, Grid, Card, CardContent, CardActionArea, Paper
 } from '@mui/material';
 
 function DashboardPage() {
   const [user, setUser] = useState(null);
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,17 +21,18 @@ function DashboardPage() {
         }
         const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
+        // ユーザー情報と、"全ての"ページ一覧を同時に取得する
         const [userResponse, pagesResponse] = await Promise.all([
           api.get(`/users/me`, authHeaders),
-          api.get(`/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
+          api.get(`/pages/`, authHeaders) // ← クエリパラメータを削除
         ]);
         
         if (userResponse.data) {
           setUser(userResponse.data);
         }
-        if (pagesResponse.data && pagesResponse.data.pages) {
-          setPages(pagesResponse.data.pages);
-          setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
+        // ★★★ バックエンドからの応答が、単純なリストに戻ったので、そのままセットする ★★★
+        if (pagesResponse.data) {
+          setPages(pagesResponse.data);
         } else {
           setPages([]);
         }
@@ -45,11 +43,7 @@ function DashboardPage() {
       }
     };
     fetchData();
-  }, [currentPage]);
-
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+  }, []); // currentPageに依存しないので、空の配列に戻す
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
@@ -110,13 +104,10 @@ function DashboardPage() {
           )}
         </Grid>
         
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Pagination count={pageCount} page={currentPage} onChange={handlePageChange} color="primary" />
-        </Box>
+        {/* ★★★ ページネーションを削除 ★★★ */}
       </Box>
     </Container>
   );
 }
 
 export default DashboardPage;
-// ★★★ ファイルの一番最後にあった、不要な '}' を削除しました ★★★
