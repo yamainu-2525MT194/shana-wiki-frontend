@@ -26,14 +26,15 @@ function DashboardPage() {
           api.get(`/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
         ]);
         
-        // ★★★ データが存在するか確認してからセットする ★★★
         if (userResponse.data) {
             setUser(userResponse.data);
         }
+        // --- ↓↓↓ ここが最後の修正です ↓↓↓ ---
         if (pagesResponse.data && pagesResponse.data.pages) {
-            setPages(pagesResponse.data.pages); // "報告書"の中から、"pages"のリストを取り出す
-            setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage)); // "報告書"の中から、"total"の数を取り出す
+            setPages(pagesResponse.data.pages); // "報告書"の中から、"pages"のリストを正しく取り出す
+            setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
         }
+        // --- ↑↑↑ ここまで ---
 
       } catch (error) {
         console.error("データの取得に失敗しました:", error);
@@ -71,7 +72,6 @@ function DashboardPage() {
         </Box>
 
         <Grid container spacing={3}>
-          {/* ★★★ pagesが存在し、かつ長さが0より大きい場合のみmapを実行する ★★★ */}
           {pages && pages.length > 0 ? (
             pages.map((page) => (
               <Grid item xs={12} sm={6} md={4} key={page.id}>
