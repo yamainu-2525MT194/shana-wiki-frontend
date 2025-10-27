@@ -15,8 +15,6 @@ function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9; // 1ページあたりのカード数
 
-  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app';
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -28,9 +26,9 @@ function DashboardPage() {
         const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
         const [userResponse, pagesResponse] = await Promise.all([
-          api.get(`${API_URL}/users/me`, authHeaders),
+          api.get(`/users/me`, authHeaders),
           // ページネーションのためにskipとlimitを渡す
-          api.get(`${API_URL}/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
+          api.get(`/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
         ]);
         
         setUser(userResponse.data);

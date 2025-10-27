@@ -17,7 +17,7 @@ function LoginPage() {
       params.append('username', email);
       params.append('password', password);
 
-      const response = await api.post('https://backend-api-1060579851059.asia-northeast1.run.app/login', params);
+      const response = await api.post('/login', params);
       
       localStorage.setItem('accessToken', response.data.access_token);
       navigate('/dashboard');

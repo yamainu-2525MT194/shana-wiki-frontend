@@ -16,8 +16,6 @@ function AdminPage() {
   const [newUserDepartmentId, setNewUserDepartmentId] = useState('1');
   const [newDepartmentName, setNewDepartmentName] = useState('');
 
-  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app';
-
   // ページが表示された時にユーザーと部署の両方を取得する
   const fetchData = async () => {
     setLoading(true);
@@ -31,8 +29,8 @@ function AdminPage() {
       const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
       const [usersResponse, departmentsResponse] = await Promise.all([
-        api.get(`${API_URL}/users/`, authHeaders),
-        api.get(`${API_URL}/departments/`, authHeaders)
+        api.get(`/users/`, authHeaders),
+        api.get(`/departments/`, authHeaders)
       ]);
 
       setUsers(usersResponse.data);
@@ -61,7 +59,7 @@ function AdminPage() {
         password: newUserPassword,
         department_id: parseInt(newUserDepartmentId)
       };
-      await api.post(`${API_URL}/users/`, newUser, { headers: { Authorization: `Bearer ${token}` } });
+      await api.post(`/users/`, newUser, { headers: { Authorization: `Bearer ${token}` } });
       alert('新しいユーザーを作成しました！');
       setNewUserName('');
       setNewUserEmail('');
@@ -77,7 +75,7 @@ function AdminPage() {
     if (window.confirm(`本当にユーザーID: ${userId} を削除しますか？`)) {
       try {
         const token = localStorage.getItem('accessToken');
-        await api.delete(`${API_URL}/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+        await api.delete(`/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
         setUsers(users.filter(user => user.id !== userId));
         alert(`ユーザーID: ${userId} を削除しました。`);
       } catch (err) { alert("ユーザーの削除に失敗しました。"); }
@@ -88,7 +86,7 @@ function AdminPage() {
   const handleUpdateRole = async (userId, newRole) => {
     try {
       const token = localStorage.getItem('accessToken');
-      await api.put(`${API_URL}/users/${userId}/role?role=${newRole}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await api.put(`/users/${userId}/role?role=${newRole}`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setUsers(users.map(user => user.id === userId ? { ...user, role: newRole } : user));
       alert(`ユーザーID: ${userId} の役割を ${newRole} に変更しました。`);
     } catch (err) { alert("役割の更新に失敗しました。"); }
@@ -99,7 +97,7 @@ function AdminPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('accessToken');
-      await api.post(`${API_URL}/departments/`, { name: newDepartmentName }, { headers: { Authorization: `Bearer ${token}` } });
+      await api.post(`/departments/`, { name: newDepartmentName }, { headers: { Authorization: `Bearer ${token}` } });
       alert('新しい部署を作成しました！');
       setNewDepartmentName('');
       fetchData();
@@ -113,7 +111,7 @@ function AdminPage() {
     if (window.confirm(`本当に部署ID: ${departmentId} を削除しますか？\nこの部署に所属するユーザーがいる場合、エラーになります。`)) {
       try {
         const token = localStorage.getItem('accessToken');
-        await api.delete(`${API_URL}/departments/${departmentId}`, { headers: { Authorization: `Bearer ${token}` } });
+        await api.delete(`/departments/${departmentId}`, { headers: { Authorization: `Bearer ${token}` } });
         setDepartments(departments.filter(dep => dep.id !== departmentId));
         alert(`部署ID: ${departmentId} を削除しました。`);
       } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from './api';
+import api from './api'; // ← ★★★ axiosからapiに変更 ★★★
 import ReactMarkdown from 'react-markdown';
 import { Typography, Box, TextField, Button, Paper, Grid, CircularProgress } from '@mui/material';
 
@@ -9,27 +9,28 @@ function PageEditor() {
   const { pageId } = useParams();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [currentUser, setCurrentUser] = useState(null); // ← ★★★ ログインユーザー情報を記憶する ★★★
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app';
+  // const API_URL = '...'; // ← ★★★ この行は削除 ★★★
 
-  // ★★★ ページが表示された時に、ログインユーザーの情報を取得する ★★★
   useEffect(() => {
     const initialize = async () => {
       try {
         const token = localStorage.getItem('accessToken');
         const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
-        const userResponse = await api.get(`${API_URL}/users/me`, authHeaders);
+        // ★★★ axios → api に変更し、URLをシンプルに ★★★
+        const userResponse = await api.get('/users/me', authHeaders);
         setCurrentUser(userResponse.data);
 
         if (pageId) {
-          const pageResponse = await api.get(`${API_URL}/pages/${pageId}`, authHeaders);
+          const pageResponse = await api.get(`/pages/${pageId}`, authHeaders);
           setTitle(pageResponse.data.title);
           setContent(pageResponse.data.content);
         }
       } catch (error) {
+        // 401エラーはapi.jsが自動で処理するので、ここでは一般的なエラー処理のみ
         console.error("データの初期化に失敗しました:", error);
       } finally {
         setLoading(false);
@@ -40,35 +41,29 @@ function PageEditor() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!currentUser) {
-      alert("ユーザー情報が取得できていません。");
-      return;
-    }
-
+    if (!currentUser) { return; }
     try {
       const token = localStorage.getItem('accessToken');
-      // ★★★ 固定値ではなく、取得したログインユーザーのIDを使う ★★★
       const pageData = { title, content, author_id: currentUser.id };
       
       if (pageId) {
-        await api.put(`${API_URL}/pages/${pageId}`, pageData, {
+        await api.put(`/pages/${pageId}`, pageData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('ページを更新しました！');
         navigate(`/pages/${pageId}`);
       } else {
-        await api.post(`${API_URL}/pages/`, pageData, {
+        await api.post('/pages/', pageData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('新しいWikiページを作成しました！');
         navigate('/dashboard');
       }
     } catch (err) {
-      console.error("ページの作成に失敗しました:", err);
-      alert("ページの作成に失敗しました。");
+      alert("ページの保存に失敗しました。");
     }
   };
-
+  
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
   }

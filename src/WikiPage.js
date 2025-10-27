@@ -11,8 +11,6 @@ function WikiPage() {
   const [user, setUser] = useState(null); // ← ★★★ログインユーザー情報を記憶する★★★
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app'; // ★重要★ あなたのバックエンドURL
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -21,8 +19,8 @@ function WikiPage() {
 
         // ★★★ ページ情報とユーザー情報を同時に取得する ★★★
         const [pageResponse, userResponse] = await Promise.all([
-          api.get(`${API_URL}/pages/${pageId}`, authHeaders),
-          api.get(`${API_URL}/users/me`, authHeaders)
+          api.get(`/pages/${pageId}`, authHeaders),
+          api.get(`/users/me`, authHeaders)
         ]);
         
         setPage(pageResponse.data);
@@ -42,7 +40,7 @@ function WikiPage() {
     if (window.confirm(`本当にこのページ「${page.title}」を削除しますか？`)) {
       try {
         const token = localStorage.getItem('accessToken');
-        await api.delete(`${API_URL}/pages/${pageId}`, {
+        await api.delete(`/pages/${pageId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('ページを削除しました。');
