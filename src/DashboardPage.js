@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from './api';
 // --- ↓↓↓ MUIの部品を追加・変更 ↓↓↓ ---
 import {
   Container, Typography, Box, Button, CircularProgress, Grid, Card, CardContent, CardActionArea, Pagination
@@ -28,9 +28,9 @@ function DashboardPage() {
         const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
         const [userResponse, pagesResponse] = await Promise.all([
-          axios.get(`${API_URL}/users/me`, authHeaders),
+          api.get(`${API_URL}/users/me`, authHeaders),
           // ページネーションのためにskipとlimitを渡す
-          axios.get(`${API_URL}/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
+          api.get(`${API_URL}/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
         ]);
         
         setUser(userResponse.data);

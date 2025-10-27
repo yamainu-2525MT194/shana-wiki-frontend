@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom'; // useNavigateとLinkを追加
-import axios from 'axios';
+import api from './api';
 import ReactMarkdown from 'react-markdown';
 import { Container, Typography, Box, Paper, CircularProgress, Button } from '@mui/material'; // Buttonを追加
 
@@ -21,8 +21,8 @@ function WikiPage() {
 
         // ★★★ ページ情報とユーザー情報を同時に取得する ★★★
         const [pageResponse, userResponse] = await Promise.all([
-          axios.get(`${API_URL}/pages/${pageId}`, authHeaders),
-          axios.get(`${API_URL}/users/me`, authHeaders)
+          api.get(`${API_URL}/pages/${pageId}`, authHeaders),
+          api.get(`${API_URL}/users/me`, authHeaders)
         ]);
         
         setPage(pageResponse.data);
@@ -42,7 +42,7 @@ function WikiPage() {
     if (window.confirm(`本当にこのページ「${page.title}」を削除しますか？`)) {
       try {
         const token = localStorage.getItem('accessToken');
-        await axios.delete(`${API_URL}/pages/${pageId}`, {
+        await api.delete(`${API_URL}/pages/${pageId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('ページを削除しました。');

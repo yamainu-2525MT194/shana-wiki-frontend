@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from './api';
 import { Container, Typography, Box, TextField, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -31,8 +31,8 @@ function AdminPage() {
       const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
       const [usersResponse, departmentsResponse] = await Promise.all([
-        axios.get(`${API_URL}/users/`, authHeaders),
-        axios.get(`${API_URL}/departments/`, authHeaders)
+        api.get(`${API_URL}/users/`, authHeaders),
+        api.get(`${API_URL}/departments/`, authHeaders)
       ]);
 
       setUsers(usersResponse.data);
@@ -61,7 +61,7 @@ function AdminPage() {
         password: newUserPassword,
         department_id: parseInt(newUserDepartmentId)
       };
-      await axios.post(`${API_URL}/users/`, newUser, { headers: { Authorization: `Bearer ${token}` } });
+      await api.post(`${API_URL}/users/`, newUser, { headers: { Authorization: `Bearer ${token}` } });
       alert('新しいユーザーを作成しました！');
       setNewUserName('');
       setNewUserEmail('');
@@ -77,7 +77,7 @@ function AdminPage() {
     if (window.confirm(`本当にユーザーID: ${userId} を削除しますか？`)) {
       try {
         const token = localStorage.getItem('accessToken');
-        await axios.delete(`${API_URL}/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+        await api.delete(`${API_URL}/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
         setUsers(users.filter(user => user.id !== userId));
         alert(`ユーザーID: ${userId} を削除しました。`);
       } catch (err) { alert("ユーザーの削除に失敗しました。"); }
@@ -88,7 +88,7 @@ function AdminPage() {
   const handleUpdateRole = async (userId, newRole) => {
     try {
       const token = localStorage.getItem('accessToken');
-      await axios.put(`${API_URL}/users/${userId}/role?role=${newRole}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await api.put(`${API_URL}/users/${userId}/role?role=${newRole}`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setUsers(users.map(user => user.id === userId ? { ...user, role: newRole } : user));
       alert(`ユーザーID: ${userId} の役割を ${newRole} に変更しました。`);
     } catch (err) { alert("役割の更新に失敗しました。"); }
@@ -99,7 +99,7 @@ function AdminPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('accessToken');
-      await axios.post(`${API_URL}/departments/`, { name: newDepartmentName }, { headers: { Authorization: `Bearer ${token}` } });
+      await api.post(`${API_URL}/departments/`, { name: newDepartmentName }, { headers: { Authorization: `Bearer ${token}` } });
       alert('新しい部署を作成しました！');
       setNewDepartmentName('');
       fetchData();
@@ -113,7 +113,7 @@ function AdminPage() {
     if (window.confirm(`本当に部署ID: ${departmentId} を削除しますか？\nこの部署に所属するユーザーがいる場合、エラーになります。`)) {
       try {
         const token = localStorage.getItem('accessToken');
-        await axios.delete(`${API_URL}/departments/${departmentId}`, { headers: { Authorization: `Bearer ${token}` } });
+        await api.delete(`${API_URL}/departments/${departmentId}`, { headers: { Authorization: `Bearer ${token}` } });
         setDepartments(departments.filter(dep => dep.id !== departmentId));
         alert(`部署ID: ${departmentId} を削除しました。`);
       } catch (err) {
