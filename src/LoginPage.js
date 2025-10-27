@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-// --- ↓↓↓ MUIの部品をインポート ↓↓↓ ---
 import { Paper, Box, Typography, TextField, Button, Alert } from '@mui/material';
 
 function LoginPage() {
@@ -28,50 +27,61 @@ function LoginPage() {
   };
 
   return (
-    // Paperでフォーム全体をカードのように囲む
-    <Paper component="form" onSubmit={handleLogin} sx={{ padding: 4, width: '100%', maxWidth: '400px' }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-          社内Wiki ログイン
-        </Typography>
-        
-        {/* エラーメッセージをAlertで表示 */}
-        {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
-        
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="email"
-          label="メールアドレス"
-          name="email"
-          autoComplete="email"
-          autoFocus
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          name="password"
-          label="パスワード"
-          type="password"
-          id="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          sx={{ mt: 3, mb: 2 }}
-        >
-          ログイン
-        </Button>
-      </Box>
-    </Paper>
+    // --- ↓↓↓ これが中央揃えを実現する魔法のBoxです ↓↓↓ ---
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh', // 画面全体の高さを使う
+        backgroundColor: '#282c34', // App.cssから背景色を移動
+      }}
+    >
+      <Paper component="form" onSubmit={handleLogin} sx={{ padding: 4, width: '100%', maxWidth: '400px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
+            社内Wiki ログイン
+          </Typography>
+          
+          {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
+          
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="メールアドレス"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="パスワード"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            ログイン
+          </Button>
+        </Box>
+      </Paper>
+    </Box>
+    // --- ↑↑↑ ここまで ---
   );
 }
 
