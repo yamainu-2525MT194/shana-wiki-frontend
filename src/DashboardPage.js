@@ -119,3 +119,4 @@ function DashboardPage() {
 }
 
 export default DashboardPage;
+// ★★★ ファイルの一番最後にあった、不要な '}' を削除しました ★★★
