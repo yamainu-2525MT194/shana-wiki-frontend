@@ -18,7 +18,10 @@ function DashboardPage() {
       setLoading(true);
       try {
         const token = localStorage.getItem('accessToken');
-        if (!token) return;
+        if (!token) {
+          setLoading(false);
+          return;
+        }
         const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
         const [userResponse, pagesResponse] = await Promise.all([
@@ -27,15 +30,14 @@ function DashboardPage() {
         ]);
         
         if (userResponse.data) {
-            setUser(userResponse.data);
+          setUser(userResponse.data);
         }
-        // --- ↓↓↓ ここが最後の修正です ↓↓↓ ---
         if (pagesResponse.data && pagesResponse.data.pages) {
-            setPages(pagesResponse.data.pages); // "報告書"の中から、"pages"のリストを正しく取り出す
-            setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
+          setPages(pagesResponse.data.pages);
+          setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
+        } else {
+          setPages([]);
         }
-        // --- ↑↑↑ ここまで ---
-
       } catch (error) {
         console.error("データの取得に失敗しました:", error);
       } finally {
