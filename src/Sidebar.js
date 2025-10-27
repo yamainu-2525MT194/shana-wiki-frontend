@@ -1,7 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Sidebar() {
+  const navigate = useNavigate(); // ページ遷移のための道具
+
+  // ログアウトボタンが押されたときの処理
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken'); // 通行証を削除
+    navigate('/'); // ログインページに移動
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -19,7 +27,6 @@ function Sidebar() {
           <span className="icon">🏠</span>
           <span className="title">ダッシュボード</span>
         </Link>
-
         <Link to="/admin" className="page-item">
           <span className="icon">⚙️</span>
           <span className="title">管理者ページ</span>
@@ -27,9 +34,11 @@ function Sidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <button className="sidebar-button">
-          <span>設定</span>
+        {/* --- ↓↓↓ ログアウトボタンを追加 ↓↓↓ --- */}
+        <button className="sidebar-button" onClick={handleLogout}>
+          <span>ログアウト</span>
         </button>
+        {/* --- ↑↑↑ ここまで --- */}
       </div>
     </aside>
   );
