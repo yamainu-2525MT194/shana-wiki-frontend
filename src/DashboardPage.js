@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from './api';
 import {
-  Container, Typography, Box, Button, CircularProgress, Grid, Card, CardContent, CardActionArea, Pagination
+  Container, Typography, Box, Button, CircularProgress, Grid, Card, CardContent, CardActionArea, Pagination, Paper
 } from '@mui/material';
 
 function DashboardPage() {
@@ -26,9 +26,14 @@ function DashboardPage() {
           api.get(`/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
         ]);
         
-        setUser(userResponse.data);
-        setPages(pagesResponse.data.pages);
-        setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
+        // ★★★ データが存在するか確認してからセットする ★★★
+        if (userResponse.data) {
+            setUser(userResponse.data);
+        }
+        if (pagesResponse.data && pagesResponse.data.pages) {
+            setPages(pagesResponse.data.pages);
+            setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
+        }
 
       } catch (error) {
         console.error("データの取得に失敗しました:", error);
@@ -54,14 +59,6 @@ function DashboardPage() {
           ようこそ、{user ? user.name : 'ゲスト'}さん！
         </Typography>
         
-        {/* ★★★ サイドバーに統一するため、このボタンは削除 ★★★
-        {user && user.role === 'admin' && (
-          <Button component={Link} to="/admin" variant="contained" color="secondary" sx={{ mb: 4 }}>
-            管理者ページへ
-          </Button>
-        )}
-        */}
-
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h5" component="h2">
             Wikiページ一覧
@@ -74,7 +71,8 @@ function DashboardPage() {
         </Box>
 
         <Grid container spacing={3}>
-          {pages.length > 0 ? (
+          {/* ★★★ pagesが存在し、かつ長さが0より大きい場合のみmapを実行する ★★★ */}
+          {pages && pages.length > 0 ? (
             pages.map((page) => (
               <Grid item xs={12} sm={6} md={4} key={page.id}>
                 <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -83,7 +81,6 @@ function DashboardPage() {
                       <Typography gutterBottom variant="h5" component="div">
                         {page.title}
                       </Typography>
-                      {/* ★★★ Markdown記号を除去する処理を追加 ★★★ */}
                       <Typography variant="body2" color="text.secondary" sx={{
                         overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
                         WebkitLineClamp: '3', WebkitBoxOrient: 'vertical',
@@ -104,7 +101,9 @@ function DashboardPage() {
             ))
           ) : (
             <Grid item xs={12}>
-              {/* ... (まだページがありませんの表示) ... */}
+              <Paper sx={{ p: 2, textAlign: 'center' }}>
+                <Typography>まだページがありません。管理者が新しいページを作成できます。</Typography>
+              </Paper>
             </Grid>
           )}
         </Grid>
