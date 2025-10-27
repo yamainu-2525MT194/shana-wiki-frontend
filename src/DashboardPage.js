@@ -67,44 +67,49 @@ function DashboardPage() {
           )}
         </Box>
 
-        <Grid container spacing={3}>
-          {pages && pages.length > 0 ? (
-            pages.map((page) => (
-              <Grid item xs={12} sm={6} md={4} key={page.id}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <CardActionArea component={Link} to={`/pages/${page.id}`} sx={{ flexGrow: 1 }}>
-                    <CardContent>
-                      <Typography gutterBottom variant="h5" component="div">
-                        {page.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{
-                        overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
-                        WebkitLineClamp: '3', WebkitBoxOrient: 'vertical',
-                      }}>
-                        {page.content.replace(/[#*`]/g, '')}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                  {page.updated_at && (
-                    <Box sx={{ p: 2, pt: 0 }}>
-                       <Typography variant="caption" color="text.secondary">
-                         更新日: {new Date(page.updated_at).toLocaleDateString()}
-                       </Typography>
-                    </Box>
-                  )}
-                </Card>
-              </Grid>
-            ))
-          ) : (
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2, textAlign: 'center' }}>
-                <Typography>まだページがありません。管理者が新しいページを作成できます。</Typography>
-              </Paper>
-            </Grid>
-          )}
-        </Grid>
-        
-        {/* ★★★ ページネーションを削除 ★★★ */}
+       {/* --- ↓↓↓ ここからテーブル形式に変更 ↓↓↓ --- */}
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="wiki pages table">
+            <TableHead>
+              <TableRow>
+                <TableCell>タイトル</TableCell>
+                <TableCell align="right">作成日</TableCell>
+                <TableCell align="right">最終更新日</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {pages.length > 0 ? (
+                pages.map((page) => (
+                  <TableRow
+                    key={page.id}
+                    component={Link}
+                    to={`/pages/${page.id}`}
+                    hover
+                    sx={{ textDecoration: 'none' }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {page.title}
+                    </TableCell>
+                    <TableCell align="right">
+                      {new Date(page.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell align="right">
+                      {/* updated_atがなければcreated_atを表示 */}
+                      {page.updated_at ? new Date(page.updated_at).toLocaleDateString() : new Date(page.created_at).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} align="center">
+                    まだページがありません。管理者が新しいページを作成できます。
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        {/* --- ↑↑↑ ここまで --- */}
       </Box>
     </Container>
   );
