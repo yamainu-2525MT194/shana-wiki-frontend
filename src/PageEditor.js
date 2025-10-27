@@ -41,12 +41,17 @@ function PageEditor() {
     try {
       const token = localStorage.getItem('accessToken');
       const pageData = { title, content, author_id: currentUser.id };
+      
       if (pageId) {
-        await axios.put(`${API_URL}/pages/${pageId}`, pageData, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.put(`${API_URL}/pages/${pageId}`, pageData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         alert('ページを更新しました！');
         navigate(`/pages/${pageId}`);
       } else {
-        await axios.post(`${API_URL}/pages/`, pageData, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.post(`${API_URL}/pages/`, pageData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         alert('新しいWikiページを作成しました！');
         navigate('/dashboard');
       }
@@ -58,7 +63,6 @@ function PageEditor() {
   if (loading) { return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>; }
 
   return (
-    // ContainerはLayout.jsにあるので、ここでは不要
     <Box sx={{ my: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         {pageId ? 'ページを編集' : '新しいページを作成'}
@@ -66,7 +70,7 @@ function PageEditor() {
       <Paper component="form" onSubmit={handleSave} sx={{ p: 2 }}>
         <TextField label="タイトル" value={title} onChange={(e) => setTitle(e.target.value)} fullWidth margin="normal" required />
         
-     {/* --- ↓↓↓ ここからレイアウト修正 ↓↓↓ --- */}
+        {/* --- ↓↓↓ ここからレイアウト修正 ↓↓↓ --- */}
         <Grid container spacing={2} sx={{ mt: 1 }}>
           {/* --- 左半分：Markdown入力欄 --- */}
           <Grid item xs={12} md={6}>
@@ -84,7 +88,7 @@ function PageEditor() {
           <Grid item xs={12} md={6}>
             <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
               <Typography variant="h6" gutterBottom>プレビュー</Typography>
-              <Box component="div" sx={{ maxHeight: 525, overflow: 'auto' }}>
+              <Box component="div" sx={{ maxHeight: 525, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
                 <ReactMarkdown>{content}</ReactMarkdown>
               </Box>
             </Paper>
