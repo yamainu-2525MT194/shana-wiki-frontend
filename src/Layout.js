@@ -22,11 +22,15 @@ function Layout() {
         </Toolbar>
       </AppBar>
 
-      {/* --- ↓↓↓ 各ページの中身がここに表示される ↓↓↓ --- */}
-      <Container>
+     <div className="container">
+      {/* --- 左側にサイドバーを配置 --- */}
+      <Sidebar />
+
+      {/* --- 右側にメインコンテンツを配置 --- */}
+      <main className="main-content">
         <Outlet />
-      </Container>
-      {/* --- ↑↑↑ 各ページの中身がここに表示される ↑↑↑ --- */}
+      </main>
+    </div>
     </div>
   );
 }
