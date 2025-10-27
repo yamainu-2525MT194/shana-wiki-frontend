@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 // --- ↓↓↓ MUIの部品を追加・変更 ↓↓↓ ---
 import {
-  Container, Typography, Box, Paper, Button, CircularProgress, Grid, Card, CardContent, CardActionArea
+  Container, Typography, Box, Button, CircularProgress, Grid, Card, CardContent, CardActionArea, Pagination
 } from '@mui/material';
 // --- ↑↑↑ MUIの部品を追加・変更 ↑↑↑ ---
 
@@ -11,6 +11,9 @@ function DashboardPage() {
   const [user, setUser] = useState(null);
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9; // 1ページあたりのカード数
 
   const API_URL = 'https://backend-api-1060579851059.asia-northeast1.run.app';
 
@@ -26,11 +29,13 @@ function DashboardPage() {
 
         const [userResponse, pagesResponse] = await Promise.all([
           axios.get(`${API_URL}/users/me`, authHeaders),
-          axios.get(`${API_URL}/pages/`, authHeaders)
+          // ページネーションのためにskipとlimitを渡す
+          axios.get(`${API_URL}/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
         ]);
         
         setUser(userResponse.data);
         setPages(pagesResponse.data);
+        setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
 
       } catch (error) {
         console.error("データの取得に失敗しました:", error);
@@ -40,7 +45,11 @@ function DashboardPage() {
     };
 
     fetchData();
-  }, []);
+  }, [currentPage]); // currentPageが変わるたびにデータを再取得
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
@@ -70,41 +79,37 @@ function DashboardPage() {
           )}
         </Box>
 
-        {/* --- ↓↓↓ ここからカード型レイアウトに変更 ↓↓↓ --- */}
-        <Grid container spacing={3}>
-          {pages.length > 0 ? (
-            pages.map((page) => (
-              <Grid item xs={12} sm={6} md={4} key={page.id}>
-                <Card sx={{ height: '100%' }}>
-                  <CardActionArea component={Link} to={`/pages/${page.id}`} sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Typography gutterBottom variant="h5" component="div">
-                        {page.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: '3', // 3行まで表示
-                        WebkitBoxOrient: 'vertical',
-                      }}>
-                        {page.content}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            ))
-          ) : (
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2, textAlign: 'center' }}>
-                <Typography>まだページがありません。管理者が新しいページを作成できます。</Typography>
-              </Paper>
+    <Grid container spacing={3}>
+          {pages.map((page) => (
+            <Grid item xs={12} sm={6} md={4} key={page.id}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardActionArea component={Link} to={`/pages/${page.id}`} sx={{ flexGrow: 1 }}>
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="div">
+                      {page.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" noWrap>
+                      {page.content}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+                {page.updated_at && (
+                  <Box sx={{ p: 2, pt: 0 }}>
+                     <Typography variant="caption" color="text.secondary">
+                       更新日: {new Date(page.updated_at).toLocaleDateString()}
+                     </Typography>
+                  </Box>
+                )}
+              </Card>
             </Grid>
-          )}
+          ))}
         </Grid>
+        
+        {/* --- ↓↓↓ ページネーションを追加 ↓↓↓ --- */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination count={pageCount} page={currentPage} onChange={handlePageChange} color="primary" />
+        </Box>
         {/* --- ↑↑↑ ここまで --- */}
-
       </Box>
     </Container>
   );
