@@ -31,8 +31,8 @@ function DashboardPage() {
             setUser(userResponse.data);
         }
         if (pagesResponse.data && pagesResponse.data.pages) {
-            setPages(pagesResponse.data.pages);
-            setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
+            setPages(pagesResponse.data.pages); // "報告書"の中から、"pages"のリストを取り出す
+            setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage)); // "報告書"の中から、"total"の数を取り出す
         }
 
       } catch (error) {
