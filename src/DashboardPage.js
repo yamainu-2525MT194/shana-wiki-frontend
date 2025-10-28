@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom'; // ★★★ useLocationを追加 ★★★
+import { Link, useLocation } from 'react-router-dom';
 import api from './api';
 import {
-  Container, Typography, Box, Button, CircularProgress, Grid, Card,
-  CardContent, CardActionArea, Pagination, Paper
+  Container, Typography, Box, Button, CircularProgress, Paper,
+  List, ListItem, ListItemText, ListItemButton, Divider // ★★★ GridとCardの代わりにList関連をインポート ★★★
 } from '@mui/material';
 
 function DashboardPage() {
   const [user, setUser] = useState(null);
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  // ★★★ ページネーションは一旦不要になるので関連コードを削除 ★★★
+  // const [pageCount, setPageCount] = useState(0);
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const itemsPerPage = 9;
 
-  // ★★★ エディタからの"合図"を受け取る ★★★
   const location = useLocation();
 
   useEffect(() => {
@@ -28,17 +28,18 @@ function DashboardPage() {
         }
         const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
+        // ★★★ ページネーションをやめ、全件取得するAPIに変更（後ほどバックエンドも修正） ★★★
         const [userResponse, pagesResponse] = await Promise.all([
           api.get(`/users/me`, authHeaders),
-          api.get(`/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
+          api.get(`/pages/all`, authHeaders) 
         ]);
         
         if (userResponse.data) {
           setUser(userResponse.data);
         }
-        if (pagesResponse.data && pagesResponse.data.pages) {
-          setPages(pagesResponse.data.pages);
-          setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
+        // ★★★ レスポンスの形式が変わることを想定 ★★★
+        if (pagesResponse.data) {
+          setPages(pagesResponse.data);
         } else {
           setPages([]);
         }
@@ -49,12 +50,7 @@ function DashboardPage() {
       }
     };
     fetchData();
-    // ★★★ "合図" (location.state) が変化した時もデータを再取得するようにする ★★★
-  }, [currentPage, location.state]); 
-
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+  }, [location.state]); 
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
@@ -78,46 +74,32 @@ function DashboardPage() {
           )}
         </Box>
 
-        <Grid container spacing={3}>
-          {pages && pages.length > 0 ? (
-            pages.map((page) => (
-              <Grid item xs={12} sm={6} md={4} key={page.id}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <CardActionArea component={Link} to={`/pages/${page.id}`} sx={{ flexGrow: 1 }}>
-                    <CardContent>
-                      <Typography gutterBottom variant="h5" component="div">
-                        {page.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{
-                        overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
-                        WebkitLineClamp: '3', WebkitBoxOrient: 'vertical',
-                      }}>
-                        {page.content.replace(/[#*`]/g, '')}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                  {page.updated_at && (
-                    <Box sx={{ p: 2, pt: 0 }}>
-                       <Typography variant="caption" color="text.secondary">
-                         更新日: {new Date(page.updated_at).toLocaleDateString()}
-                       </Typography>
-                    </Box>
-                  )}
-                </Card>
-              </Grid>
-            ))
-          ) : (
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2, textAlign: 'center' }}>
-                <Typography>まだページがありません。管理者が新しいページを作成できます。</Typography>
-              </Paper>
-            </Grid>
-          )}
-        </Grid>
-        
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Pagination count={pageCount} page={currentPage} onChange={handlePageChange} color="primary" />
-        </Box>
+        {/* ★★★ ここから下がカード表示からリスト表示への大きな変更点 ★★★ */}
+        <Paper>
+          <List>
+            {pages && pages.length > 0 ? (
+              pages.map((page, index) => (
+                <React.Fragment key={page.id}>
+                  <ListItem disablePadding>
+                    <ListItemButton component={Link} to={`/pages/${page.id}`}>
+                      <ListItemText
+                        primary={page.title}
+                        secondary={`更新日: ${new Date(page.updated_at).toLocaleDateString()} | 作成者: ${page.author ? page.author.name : '不明'}`}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  {/* 最後の項目以外には下に線を入れる */}
+                  {index < pages.length - 1 && <Divider />}
+                </React.Fragment>
+              ))
+            ) : (
+              <ListItem>
+                <ListItemText primary="まだページがありません。管理者が新しいページを作成できます。" sx={{ textAlign: 'center' }} />
+              </ListItem>
+            )}
+          </List>
+        </Paper>
+        {/* ★★★ ページネーションの表示を削除 ★★★ */}
       </Box>
     </Container>
   );
