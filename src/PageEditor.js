@@ -71,7 +71,7 @@ function PageEditor() {
       });
 
       alert('新しいWikiページを作成しました！');
-      navigate('/dashboard');
+      navigate('/dashboard', { state: { refresh: true } });
     } catch (err) {
       console.error("ページの作成に失敗しました:", err);
       alert("ページの作成に失敗しました。");

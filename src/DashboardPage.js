@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // ★★★ useLocationを追加 ★★★
 import api from './api';
 import {
-  Container, Typography, Box, Button, CircularProgress, Paper,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
+  Container, Typography, Box, Button, CircularProgress, Grid, Card,
+  CardContent, CardActionArea, Pagination, Paper
 } from '@mui/material';
 
 function DashboardPage() {
   const [user, setUser] = useState(null);
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  // ★★★ エディタからの"合図"を受け取る ★★★
+  const location = useLocation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,18 +28,17 @@ function DashboardPage() {
         }
         const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
-        // ユーザー情報と、"全ての"ページ一覧を同時に取得する
         const [userResponse, pagesResponse] = await Promise.all([
           api.get(`/users/me`, authHeaders),
-          api.get(`/pages/`, authHeaders) // ← クエリパラメータを削除
+          api.get(`/pages/?skip=${(currentPage - 1) * itemsPerPage}&limit=${itemsPerPage}`, authHeaders)
         ]);
         
         if (userResponse.data) {
           setUser(userResponse.data);
         }
-        // ★★★ バックエンドからの応答が、単純なリストに戻ったので、そのままセットする ★★★
-        if (pagesResponse.data) {
-          setPages(pagesResponse.data);
+        if (pagesResponse.data && pagesResponse.data.pages) {
+          setPages(pagesResponse.data.pages);
+          setPageCount(Math.ceil(pagesResponse.data.total / itemsPerPage));
         } else {
           setPages([]);
         }
@@ -44,7 +49,12 @@ function DashboardPage() {
       }
     };
     fetchData();
-  }, []); // currentPageに依存しないので、空の配列に戻す
+    // ★★★ "合図" (location.state) が変化した時もデータを再取得するようにする ★★★
+  }, [currentPage, location.state]); 
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
@@ -68,49 +78,46 @@ function DashboardPage() {
           )}
         </Box>
 
-       {/* --- ↓↓↓ ここからテーブル形式に変更 ↓↓↓ --- */}
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="wiki pages table">
-            <TableHead>
-              <TableRow>
-                <TableCell>タイトル</TableCell>
-                <TableCell align="right">作成日</TableCell>
-                <TableCell align="right">最終更新日</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {pages.length > 0 ? (
-                pages.map((page) => (
-                  <TableRow
-                    key={page.id}
-                    component={Link}
-                    to={`/pages/${page.id}`}
-                    hover
-                    sx={{ textDecoration: 'none' }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {page.title}
-                    </TableCell>
-                    <TableCell align="right">
-                      {new Date(page.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell align="right">
-                      {/* updated_atがなければcreated_atを表示 */}
-                      {page.updated_at ? new Date(page.updated_at).toLocaleDateString() : new Date(page.created_at).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={3} align="center">
-                    まだページがありません。管理者が新しいページを作成できます。
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        {/* --- ↑↑↑ ここまで --- */}
+        <Grid container spacing={3}>
+          {pages && pages.length > 0 ? (
+            pages.map((page) => (
+              <Grid item xs={12} sm={6} md={4} key={page.id}>
+                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardActionArea component={Link} to={`/pages/${page.id}`} sx={{ flexGrow: 1 }}>
+                    <CardContent>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {page.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{
+                        overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
+                        WebkitLineClamp: '3', WebkitBoxOrient: 'vertical',
+                      }}>
+                        {page.content.replace(/[#*`]/g, '')}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                  {page.updated_at && (
+                    <Box sx={{ p: 2, pt: 0 }}>
+                       <Typography variant="caption" color="text.secondary">
+                         更新日: {new Date(page.updated_at).toLocaleDateString()}
+                       </Typography>
+                    </Box>
+                  )}
+                </Card>
+              </Grid>
+            ))
+          ) : (
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2, textAlign: 'center' }}>
+                <Typography>まだページがありません。管理者が新しいページを作成できます。</Typography>
+              </Paper>
+            </Grid>
+          )}
+        </Grid>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination count={pageCount} page={currentPage} onChange={handlePageChange} color="primary" />
+        </Box>
       </Box>
     </Container>
   );
