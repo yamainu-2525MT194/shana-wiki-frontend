@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom'; // useNavigateとLinkを追加
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from './api';
 import ReactMarkdown from 'react-markdown';
-import { Container, Typography, Box, Paper, CircularProgress, Button } from '@mui/material'; // Buttonを追加
+import { 
+  Container, Typography, Box, Paper, CircularProgress, Button,
+  List, ListItem, Link as MuiLink // ★★★ 追加 ★★★
+} from '@mui/material';
+import AttachmentIcon from '@mui/icons-material/Attachment'; // ★★★ 追加 ★★★
 
 function WikiPage() {
   const { pageId } = useParams();
-  const navigate = useNavigate(); // ページ遷移のための道具
+  const navigate = useNavigate();
   const [page, setPage] = useState(null);
-  const [user, setUser] = useState(null); // ← ★★★ログインユーザー情報を記憶する★★★
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,7 +21,6 @@ function WikiPage() {
         const token = localStorage.getItem('accessToken');
         const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
-        // ★★★ ページ情報とユーザー情報を同時に取得する ★★★
         const [pageResponse, userResponse] = await Promise.all([
           api.get(`/pages/${pageId}`, authHeaders),
           api.get(`/users/me`, authHeaders)
@@ -35,7 +38,6 @@ function WikiPage() {
     fetchData();
   }, [pageId]);
 
-  // --- ↓↓↓ ページ削除処理を追加 ↓↓↓ ---
   const handleDelete = async () => {
     if (window.confirm(`本当にこのページ「${page.title}」を削除しますか？`)) {
       try {
@@ -44,14 +46,13 @@ function WikiPage() {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('ページを削除しました。');
-        navigate('/dashboard'); // 削除後、ダッシュボードに移動
+        navigate('/dashboard');
       } catch (err) {
         console.error("ページの削除に失敗しました:", err);
         alert("ページの削除に失敗しました。");
       }
     }
   };
-  // --- ↑↑↑ ページ削除処理を追加 ↑↑↑ ---
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
@@ -61,14 +62,18 @@ function WikiPage() {
     return <Typography>ページが見つかりません。</Typography>;
   }
 
+  // ★★★ ファイル名がPDFかどうかを判定する関数 ★★★
+  const isPdf = (filename) => {
+    return filename.toLowerCase().endsWith('.pdf');
+  };
+
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg"> {/* 表示エリアを少し広げる */}
       <Box sx={{ my: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
           {page.title}
         </Typography>
 
-        {/* --- ↓↓↓ 管理者用ボタンを追加 ↓↓↓ --- */}
         {user && user.role === 'admin' && (
           <Box sx={{ mb: 2 }}>
             <Button variant="contained" color="secondary" onClick={handleDelete}>
@@ -79,11 +84,43 @@ function WikiPage() {
             </Button>
           </Box>
         )}
-        {/* --- ↑↑↑ 管理者用ボタンを追加 ↑↑↑ --- */}
 
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ p: 3, mb: 4 }}>
           <ReactMarkdown>{page.content}</ReactMarkdown>
         </Paper>
+
+        {/* ★★★ ここから添付ファイルとPDFプレビューの表示ロジック ★★★ */}
+        {page.files && page.files.length > 0 && (
+          <Box>
+            <Typography variant="h5" gutterBottom>添付ファイル</Typography>
+            <Paper sx={{ p: 2 }}>
+              <List>
+                {page.files.map((file) => (
+                  <ListItem key={file.id}>
+                    <AttachmentIcon sx={{ mr: 1 }} />
+                    <MuiLink href={file.file_url} target="_blank" rel="noopener noreferrer">
+                      {file.filename}
+                    </MuiLink>
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+
+            {/* PDFファイルのみをフィルタリングしてプレビューを表示 */}
+            {page.files.filter(file => isPdf(file.filename)).map(pdfFile => (
+              <Box key={`pdf-${pdfFile.id}`} sx={{ mt: 4 }}>
+                <Typography variant="h6" gutterBottom>プレビュー: {pdfFile.filename}</Typography>
+                <iframe
+                  src={pdfFile.file_url}
+                  width="100%"
+                  height="800px"
+                  title={pdfFile.filename}
+                  style={{ border: '1px solid #ccc' }}
+                />
+              </Box>
+            ))}
+          </Box>
+        )}
       </Box>
     </Container>
   );
