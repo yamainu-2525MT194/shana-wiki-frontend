@@ -11,8 +11,8 @@ function DashboardPage() {
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
   // ★★★ ページネーションは一旦不要になるので関連コードを削除 ★★★
-  const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  // const [pageCount, setPageCount] = useState(0);
+  // const [currentPage, setCurrentPage] = useState(1);
   // const itemsPerPage = 9;
 
   const location = useLocation();
