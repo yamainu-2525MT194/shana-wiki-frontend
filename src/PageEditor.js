@@ -78,6 +78,14 @@ function PageEditor() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+
+    // ★★★【最重要修正点】★★★
+    // currentUserが使われていなかった問題をここで解決
+    if (!currentUser) {
+      alert("ユーザー情報が取得できていません。再度ログインしてください。");
+      return;
+    }
+
     const deptIdArray = Array.from(selectedDepartments);
 
     try {
