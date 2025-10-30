@@ -6,6 +6,7 @@ import DashboardPage from './DashboardPage';
 import AdminPage from './AdminPage';
 import WikiPage from './WikiPage';
 import PageEditor from './PageEditor';
+import EngineerStatusPage from './EngineerStatusPage'; // ★★★ 新しいページをインポート ★★★
 import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/pages/new" element={<PageEditor />} />
             <Route path="/pages/edit/:pageId" element={<PageEditor />} />
             <Route path="/pages/:pageId" element={<WikiPage />} />
+            <Route path="/engineers" element={<EngineerStatusPage />} />
           </Route>
           {/* --- ↑↑↑ ログイン後のページは全てLayoutの中に配置 ↑↑↑ --- */}
         </Routes>

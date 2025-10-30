@@ -27,6 +27,14 @@ function Sidebar() {
           <span className="icon">🏠</span>
           <span className="title">ダッシュボード</span>
         </Link>
+        
+        {/* ★★★ ここから下を新規追加 ★★★ */}
+        <Link to="/engineers" className="page-item">
+          <span className="icon">👨‍💻</span>
+          <span className="title">エンジニア状況管理</span>
+        </Link>
+        {/* ★★★ ここまでを追加 ★★★ */}
+
         <Link to="/admin" className="page-item">
           <span className="icon">⚙️</span>
           <span className="title">管理者ページ</span>
@@ -34,11 +42,9 @@ function Sidebar() {
       </div>
 
       <div className="sidebar-footer">
-        {/* --- ↓↓↓ ログアウトボタンを追加 ↓↓↓ --- */}
         <button className="sidebar-button" onClick={handleLogout}>
           <span>ログアウト</span>
         </button>
-        {/* --- ↑↑↑ ここまで --- */}
       </div>
     </aside>
   );
