@@ -1,141 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import api from './api';
-import { Container, Typography, Box, TextField, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
+import { Container, Typography, Box, Paper, TextField, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 function AdminPage() {
-  const [users, setUsers] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
   // フォーム用のstate
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserDepartmentId, setNewUserDepartmentId] = useState('1');
   const [newDepartmentName, setNewDepartmentName] = useState('');
+  const [newEngineerName, setNewEngineerName] = useState('');
+  const [newEngineerStatus, setNewEngineerStatus] = useState('待機中');
 
-  // ページが表示された時にユーザーと部署の両方を取得する
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setError("ログインしていません。");
-        setLoading(false); // setLoadingをfalseにする
-        return;
-      }
-      const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
-
-      const [usersResponse, departmentsResponse] = await Promise.all([
-        api.get(`/users/`, authHeaders),
-        api.get(`/departments/`, authHeaders)
-      ]);
-
-      setUsers(usersResponse.data);
-      setDepartments(departmentsResponse.data);
-      setError('');
-    } catch (err) {
-      console.error("データの取得に失敗しました:", err);
-      setError("データの取得に失敗しました。管理者権限がありません。");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // ユーザー作成
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('accessToken');
-      const newUser = {
-        name: newUserName,
-        email: newUserEmail,
-        password: newUserPassword,
-        department_id: parseInt(newUserDepartmentId)
-      };
-      await api.post(`/users/`, newUser, { headers: { Authorization: `Bearer ${token}` } });
-      alert('新しいユーザーを作成しました！');
-      setNewUserName('');
-      setNewUserEmail('');
-      setNewUserPassword('');
-      fetchData();
-    } catch (err) {
-      alert("ユーザーの作成に失敗しました。メールアドレスが重複している可能性があります。");
-    }
-  };
-  
-  // ユーザー削除
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm(`本当にユーザーID: ${userId} を削除しますか？`)) {
-      try {
-        const token = localStorage.getItem('accessToken');
-        await api.delete(`/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
-        setUsers(users.filter(user => user.id !== userId));
-        alert(`ユーザーID: ${userId} を削除しました。`);
-      } catch (err) { alert("ユーザーの削除に失敗しました。"); }
-    }
-  };
-
-  // 役割更新
-  const handleUpdateRole = async (userId, newRole) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      await api.put(`/users/${userId}/role?role=${newRole}`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setUsers(users.map(user => user.id === userId ? { ...user, role: newRole } : user));
-      alert(`ユーザーID: ${userId} の役割を ${newRole} に変更しました。`);
-    } catch (err) { alert("役割の更新に失敗しました。"); }
-  };
-
-  // 部署作成
-  const handleCreateDepartment = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('accessToken');
-      await api.post(`/departments/`, { name: newDepartmentName }, { headers: { Authorization: `Bearer ${token}` } });
-      alert('新しい部署を作成しました！');
-      setNewDepartmentName('');
-      fetchData();
-    } catch (err) {
-      alert("部署の作成に失敗しました。");
-    }
-  };
-
-  // 部署削除
-  const handleDeleteDepartment = async (departmentId) => {
-    if (window.confirm(`本当に部署ID: ${departmentId} を削除しますか？\nこの部署に所属するユーザーがいる場合、エラーになります。`)) {
-      try {
-        const token = localStorage.getItem('accessToken');
-        await api.delete(`/departments/${departmentId}`, { headers: { Authorization: `Bearer ${token}` } });
-        setDepartments(departments.filter(dep => dep.id !== departmentId));
-        alert(`部署ID: ${departmentId} を削除しました。`);
-      } catch (err) {
-        alert("部署の削除に失敗しました。所属ユーザーがいないか確認してください。");
-      }
-    }
-  };
-
-  if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
-  }
-  if (error) {
-    return <Typography color="error">{error}</Typography>;
-  }
+  // --- 作成ハンドラ ---
+  const handleCreateUser = async (e) => { e.preventDefault(); try { const newUser = { name: newUserName, email: newUserEmail, password: newUserPassword, department_id: parseInt(newUserDepartmentId) }; await api.post('/users/', newUser); alert('新しいユーザーを作成しました！'); setNewUserName(''); setNewUserEmail(''); setNewUserPassword(''); } catch (err) { alert("ユーザーの作成に失敗しました。"); } };
+  const handleCreateDepartment = async (e) => { e.preventDefault(); try { await api.post('/departments/', { name: newDepartmentName }); alert('新しい部署を作成しました！'); setNewDepartmentName(''); } catch (err) { alert("部署の作成に失敗しました。"); } };
+  const handleCreateEngineer = async (e) => { e.preventDefault(); try { const newEngineer = { name: newEngineerName, status: newEngineerStatus }; await api.post('/engineers/', newEngineer); alert('新しいエンジニアを登録しました！'); setNewEngineerName(''); setNewEngineerStatus('待機中'); } catch (err) { alert('エンジニアの登録に失敗しました。'); } };
 
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>管理者ダッシュボード</Typography>
-        <Button component={Link} to="/dashboard" variant="outlined" sx={{ mb: 2 }}>
-          ダッシュボードに戻る
-        </Button>
+        <Typography variant="h4" component="h1" gutterBottom>各種登録ページ</Typography>
+        <Button component={Link} to="/dashboard" variant="outlined" sx={{ mb: 2 }}>ダッシュボードに戻る</Button>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 4 }}>
+          {/* --- 新規ユーザー登録 --- */}
           <Paper component="form" onSubmit={handleCreateUser} sx={{ p: 2 }}>
             <Typography variant="h6">新規ユーザー登録</Typography>
             <TextField label="名前" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} fullWidth margin="normal" required />
@@ -145,37 +35,21 @@ function AdminPage() {
             <Button type="submit" variant="contained">ユーザーを作成</Button>
           </Paper>
 
+          {/* --- 新規部署登録 --- */}
           <Paper component="form" onSubmit={handleCreateDepartment} sx={{ p: 2 }}>
             <Typography variant="h6">新規部署登録</Typography>
             <TextField label="部署名" value={newDepartmentName} onChange={(e) => setNewDepartmentName(e.target.value)} fullWidth margin="normal" required />
             <Button type="submit" variant="contained">部署を作成</Button>
           </Paper>
           
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="h6">新規Wikiページ作成</Typography>
-            <Button component={Link} to="/pages/new" variant="contained" sx={{ mt: 2 }}>
-              エディタを開く
-            </Button>
+          {/* --- 新規エンジニア登録 --- */}
+          <Paper component="form" onSubmit={handleCreateEngineer} sx={{ p: 2 }}>
+            <Typography variant="h6">新規エンジニア登録</Typography>
+            <TextField label="エンジニア名" value={newEngineerName} onChange={(e) => setNewEngineerName(e.target.value)} fullWidth margin="normal" required />
+            <TextField label="初期ステータス" value={newEngineerStatus} onChange={(e) => setNewEngineerStatus(e.target.value)} fullWidth margin="normal" required />
+            <Button type="submit" variant="contained">エンジニアを登録</Button>
           </Paper>
         </Box>
-
-        <Typography variant="h6" gutterBottom>既存部署一覧</Typography>
-        <TableContainer component={Paper} sx={{ mb: 4 }}>
-          <Table><TableHead><TableRow><TableCell>ID</TableCell><TableCell>部署名</TableCell><TableCell align="right">操作</TableCell></TableRow></TableHead>
-            <TableBody>
-              {departments.map((dep) => (<TableRow key={dep.id}><TableCell>{dep.id}</TableCell><TableCell>{dep.name}</TableCell><TableCell align="right"><Button variant="outlined" color="secondary" onClick={() => handleDeleteDepartment(dep.id)}>削除</Button></TableCell></TableRow>))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <Typography variant="h6" gutterBottom>既存ユーザー一覧</Typography>
-        <TableContainer component={Paper}>
-          <Table><TableHead><TableRow><TableCell>ID</TableCell><TableCell>名前</TableCell><TableCell>Email</TableCell><TableCell>役割</TableCell><TableCell>部署ID</TableCell><TableCell align="right">操作</TableCell></TableRow></TableHead>
-            <TableBody>
-              {users.map((user) => (<TableRow key={user.id}><TableCell>{user.id}</TableCell><TableCell>{user.name}</TableCell><TableCell>{user.email}</TableCell><TableCell>{user.role}</TableCell><TableCell>{user.department_id}</TableCell><TableCell align="right">{user.role !== 'admin' && (<Button variant="contained" size="small" onClick={() => handleUpdateRole(user.id, 'admin')}>管理者に昇格</Button>)}<Button variant="outlined" color="secondary" size="small" sx={{ ml: 1 }} onClick={() => handleDeleteUser(user.id)}>削除</Button></TableCell></TableRow>))}
-            </TableBody>
-          </Table>
-        </TableContainer>
       </Box>
     </Container>
   );

@@ -2,12 +2,11 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 function Sidebar() {
-  const navigate = useNavigate(); // ページ遷移のための道具
+  const navigate = useNavigate();
 
-  // ログアウトボタンが押されたときの処理
   const handleLogout = () => {
-    localStorage.removeItem('accessToken'); // 通行証を削除
-    navigate('/'); // ログインページに移動
+    localStorage.removeItem('accessToken');
+    navigate('/');
   };
 
   return (
@@ -28,17 +27,22 @@ function Sidebar() {
           <span className="title">ダッシュボード</span>
         </Link>
         
-        {/* ★★★ ここから下を新規追加 ★★★ */}
         <Link to="/engineers" className="page-item">
           <span className="icon">👨‍💻</span>
           <span className="title">エンジニア状況管理</span>
         </Link>
-        {/* ★★★ ここまでを追加 ★★★ */}
+
+        {/* ★★★ ここから下が変更点 ★★★ */}
+        <Link to="/users/manage" className="page-item">
+          <span className="icon">👥</span>
+          <span className="title">ユーザー管理</span>
+        </Link>
 
         <Link to="/admin" className="page-item">
-          <span className="icon">⚙️</span>
-          <span className="title">管理者ページ</span>
+          <span className="icon">📝</span>
+          <span className="title">各種登録ページ</span>
         </Link>
+        {/* ★★★ ここまでが変更点 ★★★ */}
       </div>
 
       <div className="sidebar-footer">
