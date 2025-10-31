@@ -8,6 +8,7 @@ import WikiPage from './WikiPage';
 import PageEditor from './PageEditor';
 import EngineerStatusPage from './EngineerStatusPage'; // ★★★ 新しいページをインポート ★★★
 import UserManagementPage from './UserManagementPage';
+import SearchResultsPage from './SearchResultsPage';
 import './App.css';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <Route path="/pages/:pageId" element={<WikiPage />} />
             <Route path="/engineers" element={<EngineerStatusPage />} />
             <Route path="/users/manage" element={<UserManagementPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
           </Route>
           {/* --- ↑↑↑ ログイン後のページは全てLayoutの中に配置 ↑↑↑ --- */}
         </Routes>
