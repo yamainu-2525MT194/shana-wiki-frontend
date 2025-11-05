@@ -9,6 +9,9 @@ import PageEditor from './PageEditor';
 import EngineerStatusPage from './EngineerStatusPage'; // ★★★ 新しいページをインポート ★★★
 import UserManagementPage from './UserManagementPage';
 import SearchResultsPage from './SearchResultsPage';
+import CustomerListPage from './CustomerListPage';
+import CustomerDetailPage from './CustomerDetailPage';
+import OpportunityDetailPage from './OpportunityDetailPage'; // ★★★ 新しいページをインポート ★★★
 import './App.css';
 
 function App() {
@@ -28,6 +31,9 @@ function App() {
             <Route path="/pages/edit/:pageId" element={<PageEditor />} />
             <Route path="/pages/:pageId" element={<WikiPage />} />
             <Route path="/engineers" element={<EngineerStatusPage />} />
+            <Route path="/customers" element={<CustomerListPage />} />
+            <Route path="/customers/:customerId" element={<CustomerDetailPage />} />
+            <Route path="/opportunities/:opportunityId" element={<OpportunityDetailPage />} />
             <Route path="/users/manage" element={<UserManagementPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
           </Route>

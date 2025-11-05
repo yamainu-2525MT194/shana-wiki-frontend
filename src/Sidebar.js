@@ -32,7 +32,11 @@ function Sidebar() {
           <span className="title">エンジニア状況管理</span>
         </Link>
 
-        {/* ★★★ ここから下が変更点 ★★★ */}
+        <Link to="/customers" className="page-item">
+          <span className="icon">🏢</span>
+          <span className="title">顧客管理</span>
+        </Link>
+
         <Link to="/users/manage" className="page-item">
           <span className="icon">👥</span>
           <span className="title">ユーザー管理</span>
@@ -42,7 +46,7 @@ function Sidebar() {
           <span className="icon">📝</span>
           <span className="title">各種登録ページ</span>
         </Link>
-        {/* ★★★ ここまでが変更点 ★★★ */}
+        
       </div>
 
       <div className="sidebar-footer">
