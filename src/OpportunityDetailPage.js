@@ -113,19 +113,21 @@ function OpportunityDetailPage() {
         </Box>
 
         <Grid container spacing={3}>
-          {/* --- 案件サマリー --- */}
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>案件概要</Typography>
-              <Typography><strong>顧客名:</strong> {customer ? (
-                <Link to={`/customers/${customer.id}`}>{customer.company_name}</Link>
-              ) : 'N/A'}</Typography>
-              
-              <Typography><strong>担当エンジニア:</strong> {engineer ? engineer.name : 'N/A'}</Typography>
-              <Box sx={{ mt: 2 }}>
-                {isEditing ? (
-                  // --- 編集モード：ステータス ---
-                  <FormControl fullWidth>
+        {/* --- 案件サマリー（左カラム） --- */}
+        {/* ★ 修正点1: md={4} を追加し、PC幅では「4割」の幅に指定 */}
+        <Grid item xs={12} md={4}>
+          {/* ★ 修正点2: height: '100%' を追加し、右カラムと高さを揃える */}
+          <Paper sx={{ p: 2, height: '100%' }}>
+            <Typography variant="h6" gutterBottom>案件概要</Typography>
+            <Typography><strong>顧客名:</strong> {customer ? (
+              <Link to={`/customers/${customer.id}`}>{customer.company_name}</Link>
+            ) : 'N/A'}</Typography>
+            
+            <Typography><strong>担当エンジニア:</strong> {engineer ? engineer.name : 'N/A'}</Typography>
+            <Box sx={{ mt: 2 }}>
+              {isEditing ? (
+                // --- 編集モード：ステータス ---
+                 <FormControl fullWidth>
                     <InputLabel>現在ステータス</InputLabel>
                     <Select
                       value={editData.status}
@@ -137,38 +139,45 @@ function OpportunityDetailPage() {
                       ))}
                     </Select>
                   </FormControl>
-                ) : (
-                  // --- 通常表示：ステータス ---
-                  <Typography><strong>現在ステータス:</strong> <Chip label={opportunity.status} size="small" sx={{ ml: 1 }} /></Typography>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* --- 詳細メモ --- */}
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>詳細メモ・進捗</Typography>
-              {isEditing ? (
-                // --- 編集モード：メモ ---
-                <TextField
-                  label="詳細メモ"
-                  multiline
-                  rows={5}
-                  fullWidth
-                  variant="outlined"
-                  value={editData.notes}
-                  onChange={(e) => handleEditChange('notes', e.target.value)}
-                />
               ) : (
-                // --- 通常表示：メモ ---
-                <Typography style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-                  {opportunity.notes || 'メモはまだありません。'}
-                </Typography>
+                // --- 通常表示：ステータス ---
+                <Box component="div" sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography component="strong">現在ステータス:</Typography>
+                        <Chip label={opportunity.status} size="small" sx={{ ml: 1 }} />
+                </Box>
               )}
-            </Paper>
-          </Grid>
+            </Box>
+          </Paper>
         </Grid>
+
+        {/* --- 詳細メモ（右カラム） --- */}
+        {/* ★ 修正点3: md={8} に変更し、PC幅では「8割」の幅に指定 */}
+        <Grid item xs={12} md={8}>
+          {/* ★ 修正点4: Paperにflex設定を追加し、中の要素が高さを使い切れるようにする */}
+          <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" gutterBottom>詳細メモ・進捗</Typography>
+            {isEditing ? (
+              // --- 編集モード：メモ ---
+              <TextField
+                label="詳細メモ"
+                multiline
+                // ★ 修正点5: rowsを増やし（例: 10）、さらに sx={{ flexGrow: 1 }} を追加
+                rows={10} 
+                fullWidth
+                variant="outlined"
+                value={editData.notes}
+                onChange={(e) => handleEditChange('notes', e.target.value)}
+                sx={{ flexGrow: 1 }} // これが重要：Paperの高さに合わせて入力欄が伸びる
+              />
+            ) : (
+              // --- 通常表示：メモ ---
+              <Typography style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+                {opportunity.notes || 'メモはまだありません。'}
+              </Typography>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
 
       </Box>
     </Container>
