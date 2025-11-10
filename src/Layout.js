@@ -9,7 +9,13 @@ function Layout() {
   // ★★★ 検索キーワードを管理するState ★★★
   const [searchKeyword, setSearchKeyword] = useState('');
 
-  const handleLogout = () => { /* 変更なし */ };
+  const handleLogout = () => { 
+    // 1. ローカルストレージからアクセストークンを削除
+    localStorage.removeItem('accessToken');
+    
+    // 2. ログインページ（ルートパス: "/"）にリダイレクト
+    navigate('/');
+  };
 
   // ★★★ 検索実行時の処理 ★★★
   const handleSearch = (e) => {
