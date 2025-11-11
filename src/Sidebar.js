@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-function Sidebar() {
+function Sidebar({ user }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -37,20 +37,26 @@ function Sidebar() {
           <span className="title">顧客管理</span>
         </Link>
 
-        <Link to="/users/manage" className="page-item">
-          <span className="icon">👥</span>
-          <span className="title">ユーザー管理</span>
-        </Link>
-
         <Link to="/admin" className="page-item">
           <span className="icon">📝</span>
           <span className="title">各種登録ページ</span>
         </Link>
         
-        <Link to="/admin/login-history" className="page-item">
-          <span className="icon">📜</span> 
-          <span className="title">ログイン履歴</span>
-        </Link>
+
+        {/* user が存在し、かつ role が 'admin' の場合のみ、以下のリンク群を表示 */}
+        {user && user.role === 'admin' && (
+          <> {/* 複数のリンクをグループ化 */}
+            <Link to="/users/manage" className="page-item">
+              <span className="icon">👥</span>
+              <span className="title">ユーザー管理</span>
+            </Link>
+            
+            <Link to="/admin/login-history" className="page-item">
+              <span className="icon">📜</span> 
+              <span className="title">ログイン履歴</span>
+            </Link>
+          </>
+        )}
 
       </div>
 

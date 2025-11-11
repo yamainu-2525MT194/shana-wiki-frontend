@@ -1,17 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { AppBar, Toolbar, Typography, Button, TextField, InputAdornment, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search'; // ★★★ 検索アイコンをインポート ★★★
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import api from './api';
 
 function Layout() {
   const navigate = useNavigate();
   // ★★★ 検索キーワードを管理するState ★★★
   const [searchKeyword, setSearchKeyword] = useState('');
 
+  // ★ ログイン中のユーザー情報を保持する State
+  const [user, setUser] = useState(null);
+
+  // ★ ページ読み込み時にユーザー情報を取得
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await api.get('/users/me');
+        setUser(response.data); // ユーザー情報を State に保存
+      } catch (error) {
+        console.error("ユーザー情報の取得に失敗しました:", error);
+        // トークンが無効などの場合、ログインページに戻す
+        localStorage.removeItem('accessToken');
+        navigate('/');
+      }
+    };
+
+    fetchUser();
+  }, [navigate]); // navigate を依存配列に追加
+
   const handleLogout = () => { 
     // 1. ローカルストレージからアクセストークンを削除
     localStorage.removeItem('accessToken');
+    setUser(null); // ★ ログアウト時にユーザー情報をクリア
     
     // 2. ログインページ（ルートパス: "/"）にリダイレクト
     navigate('/');
@@ -25,6 +47,11 @@ function Layout() {
       navigate(`/search?q=${searchKeyword}`);
     }
   };
+
+  // ★ ユーザー情報がまだ読み込まれていない場合は、ローディング表示
+  if (!user) {
+    return <p>読み込み中...</p>; // ここは後でMUIのCircularProgressなどに変更しても良い
+  }
 
   return (
     <div>
@@ -64,7 +91,7 @@ function Layout() {
 
      <div className="container">
       {/* --- 左側にサイドバーを配置 --- */}
-      <Sidebar />
+      <Sidebar user={user} />
 
       {/* --- 右側にメインコンテンツを配置 --- */}
       <main className="main-content">
