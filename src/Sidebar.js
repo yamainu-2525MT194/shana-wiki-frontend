@@ -47,6 +47,11 @@ function Sidebar() {
           <span className="title">各種登録ページ</span>
         </Link>
         
+        <Link to="/admin/login-history" className="page-item">
+          <span className="icon">📜</span> 
+          <span className="title">ログイン履歴</span>
+        </Link>
+
       </div>
 
       <div className="sidebar-footer">

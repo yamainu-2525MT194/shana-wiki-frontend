@@ -41,4 +41,18 @@ api.interceptors.response.use(
   }
 );
 
+/**
+ * ログイン履歴を取得する (管理者用)
+ * @returns {Promise<Array>} ログイン履歴の配列
+ */
+export const getLoginHistory = async () => {
+    try {
+        const response = await api.get('/admin/login-history/');
+        return response.data;
+    } catch (error) {
+        console.error("ログイン履歴の取得に失敗しました:", error.response || error);
+        throw error;
+    }
+};
+
 export default api;
