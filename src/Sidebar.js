@@ -55,6 +55,11 @@ function Sidebar({ user }) {
               <span className="icon">📜</span> 
               <span className="title">ログイン履歴</span>
             </Link>
+
+            <Link to="/admin/activity-logs" className="page-item">
+              <span className="icon">📊</span> 
+              <span className="title">活動履歴</span>
+            </Link>
           </>
         )}
 

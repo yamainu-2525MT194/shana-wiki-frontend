@@ -55,4 +55,18 @@ export const getLoginHistory = async () => {
     }
 };
 
+/**
+ * 営業活動の履歴を取得する (管理者用)
+ * @returns {Promise<Array>} 活動履歴の配列
+ */
+export const getActivityLogs = async () => {
+    try {
+        const response = await api.get('/admin/activity-logs/');
+        return response.data;
+    } catch (error) {
+        console.error("活動履歴の取得に失敗しました:", error.response || error);
+        throw error;
+    }
+};
+
 export default api;

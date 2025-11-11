@@ -13,6 +13,7 @@ import CustomerListPage from './CustomerListPage';
 import CustomerDetailPage from './CustomerDetailPage';
 import OpportunityDetailPage from './OpportunityDetailPage'; // ★★★ 新しいページをインポート ★★★
 import LoginHistoryPage from './LoginHistoryPage';
+import ActivityLogPage from './ActivityLogPage';
 import './App.css';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
             <Route path="/users/manage" element={<UserManagementPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/admin/login-history" element={ <LoginHistoryPage />}/>
+            <Route path="/admin/activity-logs" element={<ActivityLogPage />} />
           </Route>
           {/* --- ↑↑↑ ログイン後のページは全てLayoutの中に配置 ↑↑↑ --- */}
         </Routes>
