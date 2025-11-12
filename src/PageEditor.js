@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import api from './api'; // ★apiインスタンスのみを使用するように統一
 import {
-  Container, Typography, Box, TextField, Button, Paper, Grid,
+  Container, Typography, Box, TextField, Button, Paper,
   CircularProgress, List, ListItem, ListItemText, FormGroup,
   FormControlLabel, Checkbox, FormLabel, FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
@@ -204,10 +204,24 @@ function PageEditor() {
             </FormGroup>
           </Box>
           
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} md={6}><TextField label="内容 (Markdown)" value={content} onChange={(e) => setContent(e.target.value)} multiline rows={20} fullWidth required /></Grid>
-            <Grid item xs={12} md={6}><Paper variant="outlined" sx={{ p: 2, height: '100%' }}><Typography variant="h5" gutterBottom>プレビュー</Typography><Box sx={{ maxHeight: 525, overflow: 'auto' }}><ReactMarkdown>{content}</ReactMarkdown></Box></Paper></Grid>
-          </Grid>
+          <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField 
+              label="内容 (Markdown)" 
+              value={content} 
+              onChange={(e) => setContent(e.target.value)} 
+              multiline 
+              rows={20} 
+              fullWidth 
+              required 
+            />
+            
+            <Paper variant="outlined" sx={{ p: 2, minHeight: '200px' }}>
+              <Typography variant="h5" gutterBottom>プレビュー</Typography>
+              <Box sx={{ maxHeight: 500, overflow: 'auto' }}>
+                <ReactMarkdown>{content}</ReactMarkdown>
+              </Box>
+            </Paper>
+          </Box>
           
           {!isEditMode && (
             <Box sx={{ mt: 2 }}>

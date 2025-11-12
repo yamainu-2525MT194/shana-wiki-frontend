@@ -2,8 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react'; // ★★★ us
 import { useParams, Link } from 'react-router-dom';
 import api from './api';
 import {
-  Container, Typography, Box, Paper, CircularProgress, Button,
-  TextField, List, ListItem, ListItemText, Divider, Grid
+  Container, Typography, Box, Paper, CircularProgress,
+  List, ListItem, ListItemText, Divider, Button, TextField, Grid,
+  // ▼▼▼ 以下を追加してください ▼▼▼
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip,
+  Link as MuiLink // エンジニアへのリンク用
 } from '@mui/material';
 
 function CustomerDetailPage() {
@@ -99,6 +102,55 @@ function CustomerDetailPage() {
               <Button type="submit" variant="contained">保存</Button>
             </Paper>
           </Grid>
+
+          <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+          進行中の案件
+        </Typography>
+
+        {customer.opportunities && customer.opportunities.length > 0 ? (
+          <TableContainer component={Paper} variant="outlined" sx={{ mb: 4 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ステータス</TableCell>
+                  <TableCell>担当エンジニア</TableCell>
+                  <TableCell>メモ</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {customer.opportunities.map((opp) => (
+                  <TableRow key={opp.id}>
+                    <TableCell>
+                      {/* ステータスをチップで表示 */}
+                      <Chip 
+                        label={opp.status} 
+                        size="small" 
+                        color={opp.status === '成約' || opp.status === '参画中' ? 'success' : 'default'} 
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {/* エンジニア名をクリックするとエンジニア詳細へ飛ぶ */}
+                      {opp.engineer ? (
+                        <MuiLink component={Link} to={`/engineers/${opp.engineer.id}`} underline="hover">
+                          {opp.engineer.name}
+                        </MuiLink>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">未定</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {opp.notes || '-'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography color="text.secondary" sx={{ mb: 4 }}>
+            現在進行中の案件はありません。
+          </Typography>
+        )}
 
           {/* --- 過去の接触履歴 --- */}
           <Grid item xs={12}>
