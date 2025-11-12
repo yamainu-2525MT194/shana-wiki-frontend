@@ -4,9 +4,10 @@ import api from './api';
 import ReactMarkdown from 'react-markdown';
 import { 
   Container, Typography, Box, Paper, CircularProgress, Button,
-  List, ListItem, Link as MuiLink // ★★★ 追加 ★★★
+  List, ListItem, Link as MuiLink, Chip, Stack // ★Chip, Stackを追加
 } from '@mui/material';
-import AttachmentIcon from '@mui/icons-material/Attachment'; // ★★★ 追加 ★★★
+import AttachmentIcon from '@mui/icons-material/Attachment';
+import FaceIcon from '@mui/icons-material/Face'; // ★アイコン追加
 
 function WikiPage() {
   const { pageId } = useParams();
@@ -18,12 +19,10 @@ function WikiPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
-
+        // ★修正: localStorageからトークンを手動取得するのをやめ、apiインスタンスに任せる
         const [pageResponse, userResponse] = await Promise.all([
-          api.get(`/pages/${pageId}`, authHeaders),
-          api.get(`/users/me`, authHeaders)
+          api.get(`/pages/${pageId}`),
+          api.get(`/users/me`)
         ]);
         
         setPage(pageResponse.data);
@@ -41,10 +40,7 @@ function WikiPage() {
   const handleDelete = async () => {
     if (window.confirm(`本当にこのページ「${page.title}」を削除しますか？`)) {
       try {
-        const token = localStorage.getItem('accessToken');
-        await api.delete(`/pages/${pageId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.delete(`/pages/${pageId}`); // ★ここもヘッダー手動指定を削除
         alert('ページを削除しました。');
         navigate('/dashboard');
       } catch (err) {
@@ -62,17 +58,30 @@ function WikiPage() {
     return <Typography>ページが見つかりません。</Typography>;
   }
 
-  // ★★★ ファイル名がPDFかどうかを判定する関数 ★★★
   const isPdf = (filename) => {
     return filename.toLowerCase().endsWith('.pdf');
   };
 
   return (
-    <Container maxWidth="lg"> {/* 表示エリアを少し広げる */}
+    <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
           {page.title}
         </Typography>
+
+        {/* ★★★ 追加: 関連エンジニアの表示 ★★★ */}
+        {page.engineer && (
+            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                <Chip 
+                    icon={<FaceIcon />} 
+                    label={`関連エンジニア: ${page.engineer.name}`} 
+                    color="primary" 
+                    variant="outlined" 
+                    // 必要であればエンジニア詳細へのリンクにする
+                    // onClick={() => navigate(`/engineers/${page.engineer.id}`)}
+                />
+            </Stack>
+        )}
 
         {user && user.role === 'admin' && (
           <Box sx={{ mb: 2 }}>
@@ -89,7 +98,6 @@ function WikiPage() {
           <ReactMarkdown>{page.content}</ReactMarkdown>
         </Paper>
 
-        {/* ★★★ ここから添付ファイルとPDFプレビューの表示ロジック ★★★ */}
         {page.files && page.files.length > 0 && (
           <Box>
             <Typography variant="h5" gutterBottom>添付ファイル</Typography>
@@ -106,7 +114,6 @@ function WikiPage() {
               </List>
             </Paper>
 
-            {/* PDFファイルのみをフィルタリングしてプレビューを表示 */}
             {page.files.filter(file => isPdf(file.filename)).map(pdfFile => (
               <Box key={`pdf-${pdfFile.id}`} sx={{ mt: 4 }}>
                 <Typography variant="h6" gutterBottom>プレビュー: {pdfFile.filename}</Typography>

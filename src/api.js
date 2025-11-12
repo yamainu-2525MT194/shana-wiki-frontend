@@ -69,4 +69,9 @@ export const getActivityLogs = async () => {
     }
 };
 
+export const getEngineers = async () => {
+  const response = await api.get('/engineers/');
+  return response.data;
+};
+
 export default api;

@@ -5,10 +5,13 @@ import {
   AccordionSummary, AccordionDetails, Chip, Grid, Select, MenuItem,
   FormControl, InputLabel, Button, TextField, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, IconButton, Divider,
-  Link as MuiLink // ★★★ リンクコンポーネントをインポート ★★★
+  Link as MuiLink, // ★★★ リンクコンポーネントをインポート ★★★
+  // ▼▼▼ 以下の4つを追加してください ▼▼▼
+  List, ListItem, ListItemButton, ListItemText
 } from '@mui/material';
 import { Link } from 'react-router-dom'; // ★★★ リンクコンポーネントをインポート ★★★
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ArticleIcon from '@mui/icons-material/Article'
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
@@ -242,6 +245,32 @@ function EngineerStatusPage() {
                   </Box>
                 )}
                 <Divider sx={{ my: 2 }} />
+
+                <Box sx={{ mt: 3 }}>
+                 <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                    <ArticleIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                      関連Wikiページ
+                    </Typography>
+      
+                  {engineer.pages && engineer.pages.length > 0 ? (
+                    <List dense>
+                      {engineer.pages.map((page) => (
+                        <ListItem key={page.id} disablePadding>
+                          <ListItemButton component={Link} to={`/pages/${page.id}`}>
+                            <ListItemText 
+                              primary={page.title} 
+                              secondary={new Date(page.updated_at || page.created_at).toLocaleDateString()}
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                      関連するページはありません
+                    </Typography>
+                  )}
+                </Box>
                 
                 {/* --- 案件テーブル --- */}
                 <Typography variant="h6">進行中の案件</Typography>
