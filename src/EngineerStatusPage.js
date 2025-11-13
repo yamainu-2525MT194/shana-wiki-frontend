@@ -210,7 +210,14 @@ function EngineerStatusPage() {
             <Accordion key={engineer.id} TransitionProps={{ unmountOnExit: true }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                  <Typography sx={{ flexGrow: 1, mr: 2 }}>{engineer.name}</Typography>
+                  <MuiLink 
+                    component={Link} 
+                    to={`/engineers/${engineer.id}`} 
+                    sx={{ flexGrow: 1, mr: 2, textDecoration: 'none', color: 'inherit', '&:hover': { textDecoration: 'underline' } }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {engineer.name}
+                  </MuiLink>
                   <Chip label={engineer.status} color={getStatusChipColor(engineer.status)} />
                 </Box>
               </AccordionSummary>

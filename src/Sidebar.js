@@ -37,6 +37,11 @@ function Sidebar({ user }) {
           <span className="title">顧客管理</span>
         </Link>
 
+        <Link to="/incidents" className="page-item">
+          <span className="icon">⚠️</span>
+          <span className="title">トラブル管理</span>
+        </Link>
+
         <Link to="/admin" className="page-item">
           <span className="icon">📝</span>
           <span className="title">各種登録ページ</span>

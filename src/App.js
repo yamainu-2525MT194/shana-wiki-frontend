@@ -7,6 +7,7 @@ import AdminPage from './AdminPage';
 import WikiPage from './WikiPage';
 import PageEditor from './PageEditor';
 import EngineerStatusPage from './EngineerStatusPage'; // ★★★ 新しいページをインポート ★★★
+import EngineerDetailPage from './EngineerDetailPage'; // ★★★ エンジニア個別ページをインポート ★★★
 import UserManagementPage from './UserManagementPage';
 import SearchResultsPage from './SearchResultsPage';
 import CustomerListPage from './CustomerListPage';
@@ -14,6 +15,7 @@ import CustomerDetailPage from './CustomerDetailPage';
 import OpportunityDetailPage from './OpportunityDetailPage'; // ★★★ 新しいページをインポート ★★★
 import LoginHistoryPage from './LoginHistoryPage';
 import ActivityLogPage from './ActivityLogPage';
+import IncidentsPage from './IncidentsPage';
 import './App.css';
 
 function App() {
@@ -33,6 +35,7 @@ function App() {
             <Route path="/pages/edit/:pageId" element={<PageEditor />} />
             <Route path="/pages/:pageId" element={<WikiPage />} />
             <Route path="/engineers" element={<EngineerStatusPage />} />
+            <Route path="/engineers/:engineerId" element={<EngineerDetailPage />} />
             <Route path="/customers" element={<CustomerListPage />} />
             <Route path="/customers/:customerId" element={<CustomerDetailPage />} />
             <Route path="/opportunities/:opportunityId" element={<OpportunityDetailPage />} />
@@ -40,6 +43,7 @@ function App() {
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/admin/login-history" element={ <LoginHistoryPage />}/>
             <Route path="/admin/activity-logs" element={<ActivityLogPage />} />
+            <Route path="/incidents" element={<IncidentsPage />} />
           </Route>
           {/* --- ↑↑↑ ログイン後のページは全てLayoutの中に配置 ↑↑↑ --- */}
         </Routes>
