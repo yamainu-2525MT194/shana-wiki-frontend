@@ -16,6 +16,7 @@ import OpportunityDetailPage from './OpportunityDetailPage'; // ★★★ 新し
 import LoginHistoryPage from './LoginHistoryPage';
 import ActivityLogPage from './ActivityLogPage';
 import IncidentsPage from './IncidentsPage';
+import ChatPage from './ChatPage';
 import './App.css';
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
             <Route path="/admin/login-history" element={ <LoginHistoryPage />}/>
             <Route path="/admin/activity-logs" element={<ActivityLogPage />} />
             <Route path="/incidents" element={<IncidentsPage />} />
+            <Route path="/chat" element={<ChatPage />} />
           </Route>
           {/* --- ↑↑↑ ログイン後のページは全てLayoutの中に配置 ↑↑↑ --- */}
         </Routes>

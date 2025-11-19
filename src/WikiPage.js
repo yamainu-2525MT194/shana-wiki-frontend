@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import AttachmentIcon from '@mui/icons-material/Attachment';
 import FaceIcon from '@mui/icons-material/Face'; // ★アイコン追加
+// import { useParams } from 'react-router-dom';
 
 function WikiPage() {
   const { pageId } = useParams();
