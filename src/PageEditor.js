@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // useNavigateは今後利用する可能性があるため残します
+// useRef を削除
+import React, { useState, useEffect } from 'react';
+
+// useNavigate を削除
+import { useParams } from 'react-router-dom';
 import api from './api';
 import {
   Box,
@@ -17,7 +20,7 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'; // ★AI FEATURE: AIアイコンを追加
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
+// import EditIcon from '@mui/icons-material/Edit';
 
 
 // 必要なAPI関数（Backendの部署APIを直接利用）
