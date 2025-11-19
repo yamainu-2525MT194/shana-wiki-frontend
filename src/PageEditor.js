@@ -1,5 +1,5 @@
 // useRef を削除
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 // useNavigate を削除
 import { useParams } from 'react-router-dom';
