@@ -5,7 +5,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 const AI_API_URL = isDevelopment 
   ? 'http://localhost:8001' // 開発環境: ローカルのAI Chatサーバー
-  : 'https://shana-ai-chat-v2-ojc7x4vb2q-an.a.run.app'; 
+  : 'https://shana-ai-chat-v2-1060579851059.asia-northeast1.run.app';
 
 const aiApi = axios.create({
   baseURL: AI_API_URL,
