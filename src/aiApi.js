@@ -47,8 +47,8 @@ aiApi.interceptors.response.use(
 export const createChatSession = async () => {
   try {
     const response = await aiApi.post('/sessions', {
-      title: null,
-      context: null
+      title: "New Chat", // ★適当な文字列を入れる
+      context: ""        // ★nullではなく空文字にする
     });
     return response.data;
   } catch (error) {
