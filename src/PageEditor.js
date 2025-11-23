@@ -103,25 +103,55 @@ function PageEditor({ onSaveSuccess, onCancel }) {
     setLoading(true);
     setError(null);
     setVectorStatus(null); // 保存時に学習ステータスをリセット
-    try {
-      const data = {
-        title: page.title,
-        content: page.content,
-        allowed_department_ids: page.allowed_department_ids
-      };
 
+    try {
       let response;
+
       if (isNewPage) {
-        response = await api.post('/pages/', data);
+        // ★★★ 新規作成 (POST) の場合：FormDataを使う (ファイル添付対応のため) ★★★
+        const formData = new FormData();
+        formData.append('title', page.title);
+        formData.append('content', page.content);
+        
+        // 部署IDの配列を1つずつ追加
+        if (page.allowed_department_ids && page.allowed_department_ids.length > 0) {
+            page.allowed_department_ids.forEach(id => {
+                formData.append('allowed_department_ids', id);
+            });
+        }
+        
+        // エンジニアID (もし選択されていれば)
+        if (page.engineer_id) {
+            formData.append('engineer_id', page.engineer_id);
+        }
+
+        // API送信 (axiosが自動的に multipart/form-data として処理します)
+        response = await api.post('/pages/', formData);
+
       } else {
-        response = await api.put(`/pages/${pageId}`, data);
+        // ★★★ 編集 (PUT) の場合：JSONを使う (main.pyがPydanticモデルを期待しているため) ★★★
+        const jsonData = {
+          title: page.title,
+          content: page.content,
+          allowed_department_ids: page.allowed_department_ids,
+          engineer_id: page.engineer_id
+        };
+
+        response = await api.put(`/pages/${pageId}`, jsonData);
       }
       
       onSaveSuccess(response.data.id || pageId);
 
     } catch (err) {
       console.error('保存エラー:', err);
-      setError(err.response?.data?.detail || 'ページの保存中にエラーが発生しました。');
+      // エラーメッセージの表示を改善
+      const errorDetail = err.response?.data?.detail;
+      if (Array.isArray(errorDetail)) {
+          // バリデーションエラーの場合
+          setError(errorDetail.map(e => e.msg).join(', '));
+      } else {
+          setError(errorDetail || 'ページの保存中にエラーが発生しました。');
+      }
     } finally {
       setLoading(false);
     }
