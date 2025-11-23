@@ -32,8 +32,25 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/admin" element={<AdminPage />} />
-            <Route path="/pages/new" element={<PageEditor />} />
-            <Route path="/pages/edit/:pageId" element={<PageEditor />} />
+            <Route 
+              path="/pages/new" 
+              element={
+                <PageEditor 
+                  onSaveSuccess={() => window.location.href = '/dashboard'} 
+                  onCancel={() => window.location.href = '/dashboard'} 
+                />
+              } 
+            />
+            <Route 
+              path="/pages/edit/:pageId" 
+              element={
+                <PageEditor 
+                  onSaveSuccess={(id) => window.location.href = `/pages/${id}`} 
+                  onCancel={() => window.history.back()} 
+                />
+              } 
+            />
+            {/* ★★★ ここまで修正 ★★★ */}
             <Route path="/pages/:pageId" element={<WikiPage />} />
             <Route path="/engineers" element={<EngineerStatusPage />} />
             <Route path="/engineers/:engineerId" element={<EngineerDetailPage />} />
