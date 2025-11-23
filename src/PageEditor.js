@@ -54,7 +54,7 @@ function PageEditor({ onSaveSuccess, onCancel }) {
     try {
       // 部署一覧を取得
       const [deptResponse, engResponse] = await Promise.all([
-        api.get('/departments/'),
+        getDepartments(),
         api.get('/engineers/')
       ]);
       
