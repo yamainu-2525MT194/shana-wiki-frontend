@@ -52,8 +52,13 @@ function PageEditor({ onSaveSuccess, onCancel }) {
     setLoading(true);
     try {
       // 部署一覧を取得
-      const deptResponse = await getDepartments(); 
+      const [deptResponse, engResponse] = await Promise.all([
+        api.get('/departments/'),
+        api.get('/engineers/')
+      ]);
+      
       setDepartments(deptResponse.data);
+      setEngineers(engResponse.data); // ★エンジニアをセット
 
       // ★★★ CRITICAL FIX: 既存ページ編集の場合のみデータをフェッチする ★★★
       if (isEditMode) { 
@@ -222,6 +227,29 @@ function PageEditor({ onSaveSuccess, onCancel }) {
         rows={15}
         variant="outlined"
       />
+
+      {/* ★★★ エンジニア選択プルダウンを追加 ★★★ */}
+      <TextField
+        select
+        fullWidth
+        label="関連エンジニア"
+        name="engineer_id"
+        value={page.engineer_id || ''}
+        onChange={handleChange}
+        margin="normal"
+        variant="outlined"
+        SelectProps={{
+          native: true,
+        }}
+        InputLabelProps={{ shrink: true }}
+      >
+        <option value="">(選択なし)</option>
+        {engineers.map((eng) => (
+          <option key={eng.id} value={eng.id}>
+            {eng.name}
+          </option>
+        ))}
+      </TextField>
 
       <Divider sx={{ my: 3 }} />
 
