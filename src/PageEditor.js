@@ -38,6 +38,7 @@ function PageEditor({ onSaveSuccess, onCancel }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [departments, setDepartments] = useState([]);
+  const [engineers, setEngineers] = useState([]);
   
   // ★★★ AI学習のステータス管理用State ★★★
   const [vectorStatus, setVectorStatus] = useState(null); 
