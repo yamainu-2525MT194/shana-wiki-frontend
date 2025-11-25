@@ -204,7 +204,9 @@ function PageEditor({ onSaveSuccess, onCancel }) {
     setVectorStatus(null);
     setLoading(true);
     try {
-        const response = await api.post(`/pages/${id}/vectorize`); 
+        // ★修正: const response = を削除し、実行だけ行うように変更
+        await api.post(`/pages/${id}/vectorize`); 
+        
         setVectorStatus({ 
             success: true, 
             message: 'AI学習を依頼しました。' 
