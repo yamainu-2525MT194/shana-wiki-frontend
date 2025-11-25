@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link} from 'react-router-dom';
 import api from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress, Button, Grid, Chip,
@@ -10,7 +10,6 @@ import EditIcon from '@mui/icons-material/Edit';
 
 function IncidentDetailPage() {
   const { incidentId } = useParams(); // URLからIDを取得
-  const navigate = useNavigate();
   const [incident, setIncident] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
