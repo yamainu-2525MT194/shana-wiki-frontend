@@ -144,6 +144,14 @@ function EngineerDetailPage() {
     });
   };
 
+  const formatDate = (dateString) => {
+  if (!dateString) return '不明';
+  return new Date(dateString).toLocaleString('ja-JP', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit'
+  });
+};
+
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
   }
@@ -311,6 +319,16 @@ function EngineerDetailPage() {
                         }
                     />
                 </ListItem>
+            {/* ★★★ 追加: 最終更新日時の表示 ★★★ */}
+                {hasSkills && (
+                  <ListItem>
+                    <ListItemText 
+                        primary="最終学習日 (データ更新日)"
+                        secondary={formatDate(engineer.skills_updated_at)}
+                        primaryTypographyProps={{ variant: 'body2', fontWeight: 'bold' }}
+                    />
+                  </ListItem>
+                )}
             </List>
 
             {/* デバッグ用や確認用に、データ量だけ表示することも可能 */}
