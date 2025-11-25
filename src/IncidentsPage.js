@@ -229,7 +229,10 @@ function IncidentsPage() {
                     <TableCell>
                       <Chip label={incident.status} color={getStatusColor(incident.status)} size="small" />
                     </TableCell>
-                    <TableCell>{incident.title}</TableCell>
+                    <TableCell><Link to={`/incidents/${incident.id}`} 
+                      style={{ textDecoration: 'none', fontWeight: 'bold', color: '#1976d2' }}>
+                      {incident.title}
+                    </Link></TableCell>
                     <TableCell>
                       {incident.engineer ? (
                         <Link to={`/engineers/${incident.engineer_id}`} style={{ textDecoration: 'none' }}>
