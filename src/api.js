@@ -4,10 +4,17 @@ import axios from 'axios';
 // 現在の環境が 'development' (ローカル) かどうかを判定
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// 環境に応じてAPIのベースURLを切り替える
+// 一時的にローカル判定を無効化し、常に本番URLを使うようにします
+/*
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const API_URL = isDevelopment 
-  ? 'http://localhost:8000' // 開発環境ではローカルのバックエンドを指す
-  : 'https://backend-api-1060579851059.asia-northeast1.run.app'; // 本番環境ではGCPを指す
+  ? 'http://localhost:8000' 
+  : 'https://backend-api-1060579851059.asia-northeast1.run.app'; 
+*/
+
+// 環境に応じてAPIのベースURLを切り替える
+const API_URL  = 'https://backend-api-1060579851059.asia-northeast1.run.app';
 
 const api = axios.create({
   baseURL: API_URL,
