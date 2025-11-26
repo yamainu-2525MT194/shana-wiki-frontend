@@ -57,7 +57,10 @@ function EngineerStatusPage() {
     }
   };
 
-  useEffect(() => { fetchInitialData(); }, []);
+ useEffect(() => { 
+    fetchInitialData(); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // --- データ集計ロジック ---
   const summaryData = useMemo(() => {
