@@ -5,11 +5,9 @@ import {
   AccordionSummary, AccordionDetails, Chip, Grid, Select, MenuItem,
   FormControl, InputLabel, Button, TextField, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, IconButton, Divider,
-  Link as MuiLink, // ★★★ リンクコンポーネントをインポート ★★★
-  // ▼▼▼ 以下の4つを追加してください ▼▼▼
-  List, ListItem, ListItemButton, ListItemText
+  List, ListItem, ListItemButton, ListItemText, Link as MuiLink
 } from '@mui/material';
-import { Link } from 'react-router-dom'; // ★★★ リンクコンポーネントをインポート ★★★
+import { Link } from 'react-router-dom';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArticleIcon from '@mui/icons-material/Article'
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -21,7 +19,7 @@ function EngineerStatusPage() {
   const [engineers, setEngineers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingEngineerId, setEditingEngineerId] = useState(null);
-  const [showNewOppForm, setShowNewOppForm] = useState(null);
+  const [showNewOppForm, setShowNewOppForm] = useState(null); // エンジニアIDが入る
   const [customers, setCustomers] = useState([]);
   const [newOppCustomerId, setNewOppCustomerId] = useState('');
   const [newOppNotes, setNewOppNotes] = useState('');
@@ -29,9 +27,10 @@ function EngineerStatusPage() {
   const engineerStatusOptions = ['待機中', '営業中', '参画中'];
   const opportunityStatusOptions = ['提案中', '面談調整中', '結果待ち', '成約', '失注'];
 
-  // ★★★ データを2つ（エンジニアと顧客）取得する ★★★
+  // 初期データ取得
   const fetchInitialData = async () => {
-    setLoading(true);
+    // 初回のみローディングを出す
+    if (engineers.length === 0) setLoading(true);
     try {
       const [engineerResponse, customerResponse] = await Promise.all([
         api.get('/engineers/'),
@@ -41,6 +40,21 @@ function EngineerStatusPage() {
       setCustomers(customerResponse.data);
     } catch (error) { console.error("データの取得に失敗しました:", error); }
     finally { setLoading(false); }
+  };
+
+  // ★★★ 追加: 特定のエンジニア1人だけをリフレッシュする関数 ★★★
+  const refreshSingleEngineer = async (engineerId) => {
+    try {
+      const response = await api.get(`/engineers/${engineerId}`);
+      const updatedEngineer = response.data;
+      
+      // ステート内の該当エンジニアだけ差し替える
+      setEngineers(prev => prev.map(eng => 
+        eng.id === engineerId ? updatedEngineer : eng
+      ));
+    } catch (error) {
+      console.error("エンジニア個別の更新に失敗しました:", error);
+    }
   };
 
   useEffect(() => { fetchInitialData(); }, []);
@@ -66,17 +80,21 @@ function EngineerStatusPage() {
       eng.id === engineerId ? { ...eng, [field]: value } : eng
     ));
   };
+
   const handleSaveEngineerDetails = async (engineerId) => {
     const engineer = engineers.find(eng => eng.id === engineerId);
     try {
       await api.put(`/engineers/${engineerId}`, { name: engineer.name, skills: engineer.skills, status: engineer.status });
       alert('エンジニア情報を更新しました。');
       setEditingEngineerId(null);
-    } catch (error) { alert('エンジニア情報の更新に失敗しました。'); fetchInitialData(); }
+      refreshSingleEngineer(engineerId); // 保存後に最新化
+    } catch (error) { alert('エンジニア情報の更新に失敗しました。'); }
   };
+
   const handleEngineerStatusChange = async (engineerId, newStatus) => {
     try {
       await api.put(`/engineers/update-status/${engineerId}`, { status: newStatus });
+      // 楽観的UI更新（API待たずに見た目だけ変える）
       setEngineers(prev => prev.map(eng => eng.id === engineerId ? { ...eng, status: newStatus } : eng));
     } catch (error) { console.error("エンジニアステータスの更新に失敗しました:", error); }
   };
@@ -86,13 +104,25 @@ function EngineerStatusPage() {
     if (!newOppCustomerId) { alert('顧客を選択してください。'); return; }
     try {
       const newOpp = { customer_id: parseInt(newOppCustomerId, 10), status: '提案中', notes: newOppNotes };
+      
+      // API送信
       await api.post(`/engineers/${engineerId}/opportunities/`, newOpp);
+      
       alert('新しい案件を追加しました。');
+      
+      // フォームをリセット
       setNewOppCustomerId('');
       setNewOppNotes('');
       setShowNewOppForm(null);
-      fetchInitialData(); 
-    } catch (error) { console.error("案件の追加に失敗しました:", error); alert('案件の追加に失敗しました。'); }
+
+      // ★★★ 修正: 全リロードではなく、このエンジニアだけを更新する ★★★
+      // これによりアコーディオンが閉じたり、Loading画面になったりしません
+      await refreshSingleEngineer(engineerId); 
+
+    } catch (error) { 
+        console.error("案件の追加に失敗しました:", error); 
+        alert('案件の追加に失敗しました。'); 
+    }
   };
   
   const handleOppDetailsChange = (engineerId, oppId, field, value) => {
@@ -123,6 +153,7 @@ function EngineerStatusPage() {
   const handleOpportunityStatusChange = async (engineerId, oppId, newStatus) => { 
     try { 
       await api.put(`/opportunities/${oppId}/status`, { status: newStatus }); 
+      // 楽観的更新
       setEngineers(prev => prev.map(eng => eng.id === engineerId ? { ...eng, opportunities: eng.opportunities.map(opp => opp.id === oppId ? { ...opp, status: newStatus } : opp) } : eng)); 
     } catch (error) { console.error("案件ステータスの更新に失敗しました:", error); } 
   };
@@ -131,6 +162,7 @@ function EngineerStatusPage() {
     if (window.confirm('本当にこの案件を削除しますか？')) { 
       try { 
         await api.delete(`/opportunities/${oppId}`); 
+        // 削除時はフロント側で配列から消すだけでOK（リロード不要）
         setEngineers(prev => prev.map(eng => eng.id === engineerId ? { ...eng, opportunities: eng.opportunities.filter(opp => opp.id !== oppId) } : eng)); 
       } catch (error) { alert('案件の削除に失敗しました。'); } 
     } 
@@ -200,10 +232,8 @@ function EngineerStatusPage() {
             </Paper>
           </Grid>
         </Grid>
-        {/* --- ダッシュボードセクション ここまで --- */}
 
-
-        {/* --- エンジニア一覧リスト (編集機能も全て含む) --- */}
+        {/* --- エンジニア一覧リスト --- */}
         {engineers.map((engineer) => {
           const isEditing = editingEngineerId === engineer.id;
           return (
@@ -222,14 +252,14 @@ function EngineerStatusPage() {
                 </Box>
               </AccordionSummary>
               <AccordionDetails>
-                {/* --- エンジニア情報（通常表示 or 編集フォーム） --- */}
+                {/* --- エンジニア情報 --- */}
                 {isEditing ? (
                   <Box>
                     <TextField label="エンジニア名" defaultValue={engineer.name} onChange={(e) => handleEngineerDetailsChange(engineer.id, 'name', e.target.value)} fullWidth margin="normal" />
                     <TextField label="スキル (カンマ区切り)" defaultValue={engineer.skills || ''} onChange={(e) => handleEngineerDetailsChange(engineer.id, 'skills', e.target.value)} fullWidth margin="normal" helperText="例: Java,React,AWS" />
                     <Box mt={2}>
                       <Button onClick={() => handleSaveEngineerDetails(engineer.id)} variant="contained" startIcon={<SaveIcon />}>保存</Button>
-                      <Button onClick={() => { setEditingEngineerId(null); fetchInitialData(); }} sx={{ml: 1}}>キャンセル</Button>
+                      <Button onClick={() => { setEditingEngineerId(null); refreshSingleEngineer(engineer.id); }} sx={{ml: 1}}>キャンセル</Button>
                     </Box>
                   </Box>
                 ) : (
