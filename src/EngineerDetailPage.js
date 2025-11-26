@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from './api';
+import api from './api'; // ★これを使います
 import {
   Container, Typography, Box, Paper, CircularProgress, Button, Grid, Chip,
   TextField, FormControl, InputLabel, Select, MenuItem,
   Alert,
   Input,
   Divider,
-  List, ListItem, ListItemIcon, ListItemText // ★★★ 追加: リスト表示用 ★★★
+  List, ListItem, ListItemIcon, ListItemText
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'; // ★★★ 追加: 完了アイコン ★★★
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'; // ★★★ 追加: 未完了アイコン ★★★
-import SmartToyIcon from '@mui/icons-material/SmartToy'; // ★★★ 追加: AIアイコン ★★★
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 function EngineerDetailPage() {
   const { engineerId } = useParams();
@@ -63,7 +63,7 @@ function EngineerDetailPage() {
     }
   };
 
-  // アップロード実行ハンドラ
+  // ★★★ 修正箇所：アップロード実行ハンドラ ★★★
   const handleUpload = async () => {
     if (!selectedFile) return;
 
@@ -73,34 +73,34 @@ function EngineerDetailPage() {
     const formData = new FormData();
     formData.append('file', selectedFile);
 
-    const token = localStorage.getItem('accessToken');
-    const apiUrl = 'http://localhost:8000'; 
+    // ★ 削除: トークン取得やURLの手動設定は不要です (api.jsが処理します)
+    // const token = localStorage.getItem('accessToken');
+    // const apiUrl = 'http://localhost:8000'; 
 
     try {
-        const response = await fetch(`${apiUrl}/engineers/${engineerId}/upload-skill-sheet`, {
-            method: 'POST',
+        // ★ 変更: api.post (axios) を使用
+        // api.js でBaseURLが設定されているので、パスだけでOKです
+        const response = await api.post(`/engineers/${engineerId}/upload-skill-sheet`, formData, {
             headers: {
-                'Authorization': `Bearer ${token}` 
-            },
-            body: formData 
+                'Content-Type': 'multipart/form-data', // axiosでファイル送る時はこれが必要な場合がある
+                // Authorizationヘッダーはapi.jsのinterceptorが自動付与します
+            }
         });
 
-        if (response.ok) {
-            const data = await response.json();
+        // axiosの場合、response.ok ではなく status で判定、データは response.data
+        if (response.status === 200 || response.status === 202) {
+            const data = response.data;
             setUploadResult({ 
                 success: true, 
                 message: `PDF解析に成功し、AIベクトルを更新しました。新しいステータス: ${data.new_status}` 
             });
             fetchEngineerDetails(); 
-        } else {
-            const errorData = await response.json();
-            setUploadResult({ 
-                success: false, 
-                message: `アップロード失敗: ${errorData.detail || response.statusText}` 
-            });
-        }
+        } 
     } catch (error) {
-        setUploadResult({ success: false, message: 'ネットワーク接続エラーまたはサーバーエラーが発生しました。' });
+        // axiosのエラーハンドリング
+        console.error("Upload error:", error);
+        const errorMessage = error.response?.data?.detail || 'アップロードに失敗しました。';
+        setUploadResult({ success: false, message: `アップロード失敗: ${errorMessage}` });
     } finally {
         setUploading(false);
         setSelectedFile(null);
@@ -121,7 +121,7 @@ function EngineerDetailPage() {
         api.put(`/engineers/update-status/${engineerId}`, { status: editData.status }),
         api.put(`/engineers/${engineerId}`, { 
           name: engineer.name,
-          skills: editData.skills, // 編集はできないが、既存のデータを維持して送る
+          skills: editData.skills, 
           memo: editData.memo
         })
       ]);
@@ -160,7 +160,6 @@ function EngineerDetailPage() {
     return <Typography>エンジニアが見つかりません。</Typography>;
   }
 
-  // スキルデータがあるかどうかで表示を切り替え
   const hasSkills = engineer.skills && engineer.skills.length > 0;
 
   return (
@@ -187,11 +186,9 @@ function EngineerDetailPage() {
         </Box>
 
         <Grid container spacing={3}>
-        {/* --- 左カラム: ファイルアップロード & 基本情報 --- */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2, height: '100%' }}>
             
-            {/* PDFアップロードセクション */}
             <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" gutterBottom>スキルシート自動解析 (PDF)</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -242,7 +239,6 @@ function EngineerDetailPage() {
 
             <Divider sx={{ my: 2 }} />
             
-            {/* 基本情報セクション */}
             <Box>
                 <Typography variant="h6" gutterBottom>基本情報</Typography>
                 <Typography><strong>名前:</strong> {engineer.name}</Typography>
@@ -272,10 +268,8 @@ function EngineerDetailPage() {
           </Paper>
         </Grid>
 
-        {/* --- 右カラム: メモ欄 & AI学習ステータス --- */}
         <Grid item xs={12} md={8}>
           
-          {/* エンジニアメモ (自由記述) セクション */}
           <Paper sx={{ p: 2, mb: 3 }}>
             <Typography variant="h6" gutterBottom>エンジニアメモ (自由記述)</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -299,7 +293,6 @@ function EngineerDetailPage() {
             )}
           </Paper>
 
-          {/* ★★★ 変更: スキル・経歴詳細 (AI学習ステータスのみ表示) ★★★ */}
           <Paper sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <SmartToyIcon color="primary" sx={{ mr: 1 }} />
@@ -319,7 +312,6 @@ function EngineerDetailPage() {
                         }
                     />
                 </ListItem>
-            {/* ★★★ 追加: 最終更新日時の表示 ★★★ */}
                 {hasSkills && (
                   <ListItem>
                     <ListItemText 
@@ -331,7 +323,6 @@ function EngineerDetailPage() {
                 )}
             </List>
 
-            {/* デバッグ用や確認用に、データ量だけ表示することも可能 */}
             {hasSkills && (
                 <Box sx={{ mt: 1, ml: 2 }}>
                     <Chip label={`登録データ量: 約${engineer.skills.length}文字`} size="small" variant="outlined" />
