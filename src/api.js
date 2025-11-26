@@ -1,9 +1,6 @@
 import axios from 'axios';
 
 // ★★★【最重要】★★★
-// 現在の環境が 'development' (ローカル) かどうかを判定
-const isDevelopment = process.env.NODE_ENV === 'development';
-
 // 一時的にローカル判定を無効化し、常に本番URLを使うようにします
 /*
 const isDevelopment = process.env.NODE_ENV === 'development';
