@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react'; // ★★★ useCallbackを追加 ★★★
+import React, { useState, useEffect, useCallback } from 'react'; 
 import { useParams, Link } from 'react-router-dom';
 import api from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress,
   List, ListItem, ListItemText, Divider, Button, TextField, Grid,
-  // ▼▼▼ 以下を追加してください ▼▼▼
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip,
-  Link as MuiLink // エンジニアへのリンク用
+  Link as MuiLink 
 } from '@mui/material';
+// ★★★ 追加: AIマッチング用のアイコンとダイアログ ★★★
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import EngineerMatchingDialog from './EngineerMatchingDialog'; 
 
 function CustomerDetailPage() {
   const { customerId } = useParams();
@@ -15,9 +17,10 @@ function CustomerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState('');
 
-  // ★★★【修正点1】★★★
-  // fetchCustomerDetailsをuseCallbackで囲む
-  // これにより、customerIdが変わらない限り、この関数は「同じもの」として扱われる
+  // ★★★ 追加: マッチングダイアログ用のステート ★★★
+  const [openMatchDialog, setOpenMatchDialog] = useState(false);
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+
   const fetchCustomerDetails = useCallback(async () => {
     setLoading(true);
     try {
@@ -28,16 +31,23 @@ function CustomerDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [customerId]); // この関数は customerId にのみ依存する
+  }, [customerId]); 
 
-  // ★★★【修正点2】★★★
-  // useEffectは、customerIdではなく、fetchCustomerDetails関数に依存する
-  // これで、Reactの警告(exhaustive-deps)が解消される
   useEffect(() => {
     fetchCustomerDetails();
   }, [fetchCustomerDetails]); 
 
-  // 接触履歴を保存するハンドラ
+  // ★★★ 追加: AIマッチングボタンを押した時の処理 ★★★
+  const handleOpenMatch = (opportunity) => {
+    setSelectedOpportunity(opportunity);
+    setOpenMatchDialog(true);
+  };
+
+  const handleCloseMatch = () => {
+    setOpenMatchDialog(false);
+    setSelectedOpportunity(null);
+  };
+
   const handleSaveContact = async (e) => {
     e.preventDefault();
     if (!newNote.trim()) {
@@ -49,13 +59,13 @@ function CustomerDetailPage() {
         notes: newNote
       });
       alert('接触履歴を保存しました。');
-      setNewNote(''); // フォームをクリア
-      fetchCustomerDetails(); // ★ 変更なし：useCallbackで定義された関数を呼ぶ
+      setNewNote(''); 
+      fetchCustomerDetails(); 
     } catch (error) {
       console.error("接触履歴の保存に失敗しました:", error);
       alert('保存に失敗しました。');
     }
-  }; // ★★★【修正点3】: 余分な括弧を削除 ★★★
+  };
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
@@ -104,53 +114,66 @@ function CustomerDetailPage() {
           </Grid>
 
           <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-          進行中の案件
-        </Typography>
-
-        {customer.opportunities && customer.opportunities.length > 0 ? (
-          <TableContainer component={Paper} variant="outlined" sx={{ mb: 4 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>ステータス</TableCell>
-                  <TableCell>担当エンジニア</TableCell>
-                  <TableCell>メモ</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {customer.opportunities.map((opp) => (
-                  <TableRow key={opp.id}>
-                    <TableCell>
-                      {/* ステータスをチップで表示 */}
-                      <Chip 
-                        label={opp.status} 
-                        size="small" 
-                        color={opp.status === '成約' || opp.status === '参画中' ? 'success' : 'default'} 
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {/* エンジニア名をクリックするとエンジニア詳細へ飛ぶ */}
-                      {opp.engineer ? (
-                        <MuiLink component={Link} to={`/engineers/${opp.engineer.id}`} underline="hover">
-                          {opp.engineer.name}
-                        </MuiLink>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">未定</Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {opp.notes || '-'}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <Typography color="text.secondary" sx={{ mb: 4 }}>
-            現在進行中の案件はありません。
+            進行中の案件
           </Typography>
-        )}
+
+          {customer.opportunities && customer.opportunities.length > 0 ? (
+            <TableContainer component={Paper} variant="outlined" sx={{ mb: 4 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ステータス</TableCell>
+                    <TableCell>担当エンジニア</TableCell>
+                    <TableCell>メモ</TableCell>
+                    {/* ★★★ 追加: AI提案列 ★★★ */}
+                    <TableCell align="center">AIマッチング</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {customer.opportunities.map((opp) => (
+                    <TableRow key={opp.id}>
+                      <TableCell>
+                        <Chip 
+                          label={opp.status} 
+                          size="small" 
+                          color={opp.status === '成約' || opp.status === '参画中' ? 'success' : 'default'} 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {opp.engineer ? (
+                          <MuiLink component={Link} to={`/engineers/${opp.engineer.id}`} underline="hover">
+                            {opp.engineer.name}
+                          </MuiLink>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">未定</Typography>
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {opp.notes || '-'}
+                      </TableCell>
+                      {/* ★★★ 追加: ボタン配置 ★★★ */}
+                      <TableCell align="center">
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          color="primary"
+                          startIcon={<AutoAwesomeIcon />}
+                          onClick={() => handleOpenMatch(opp)}
+                          disabled={!opp.notes} // メモがないとマッチングできないため
+                        >
+                          候補を探す
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Typography color="text.secondary" sx={{ mb: 4 }}>
+              現在進行中の案件はありません。
+            </Typography>
+          )}
 
           {/* --- 過去の接触履歴 --- */}
           <Grid item xs={12}>
@@ -158,7 +181,6 @@ function CustomerDetailPage() {
               <Typography variant="h6" gutterBottom>接触履歴</Typography>
               {customer.contacts && customer.contacts.length > 0 ? (
                 <List>
-                  {/* ★★★ 接触履歴を新しい順にソートして表示 ★★★ */}
                   {[...customer.contacts].sort((a, b) => new Date(b.contact_date) - new Date(a.contact_date)).map((contact, index) => (
                     <React.Fragment key={contact.id}>
                       <ListItem>
@@ -178,6 +200,13 @@ function CustomerDetailPage() {
           </Grid>
         </Grid>
       </Box>
+
+      {/* ★★★ 追加: マッチングダイアログの表示 ★★★ */}
+      <EngineerMatchingDialog
+        open={openMatchDialog}
+        onClose={handleCloseMatch}
+        opportunity={selectedOpportunity}
+      />
     </Container>
   );
 }
