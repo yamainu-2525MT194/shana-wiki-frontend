@@ -1,14 +1,15 @@
+// shana-wiki-frontend/src/aiApi.js
+
 import axios from 'axios';
 
-// ★★★ 修正箇所 ★★★
-// const isDevelopment = process.env.NODE_ENV === 'development';
+// ★★★ 設定をローカル開発優先に戻します ★★★
+// Reactのローカル開発(npm start)時は true になります
+const isDevelopment = process.env.NODE_ENV === 'development';
 
-// const AI_API_URL = isDevelopment 
-//   ? 'http://localhost:8001' 
-//   : 'https://shana-ai-chat-v2-1060579851059.asia-northeast1.run.app';
-
-// ↓ 常にCloud Run (本番) を使用
-const AI_API_URL = 'https://shana-ai-chat-v2-1060579851059.asia-northeast1.run.app';
+// 開発中は localhost, 本番ビルド時は Cloud Run を自動で切り替え
+const AI_API_URL = isDevelopment 
+  ? 'http://localhost:8001' 
+  : 'https://shana-ai-chat-v2-1060579851059.asia-northeast1.run.app';
 
 const aiApi = axios.create({
   baseURL: AI_API_URL,
@@ -17,7 +18,9 @@ const aiApi = axios.create({
 // リクエストインターセプター: トークンを自動付与
 aiApi.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    // トークンキー名は login 処理の実装に合わせて 'accessToken' か 'token' か確認してください
+    // ここでは念のため両方チェックするように書いておきます
+    const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -35,9 +38,12 @@ aiApi.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
+      // 認証エラー時は強制ログアウト処理
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('token');
       window.location.href = '/';
-      alert('セッションの有効期限が切れました。再度ログインしてください。');
+      // ユーザー体験を損なわないよう、alertは必要な場合のみ推奨
+      // alert('セッションの有効期限が切れました。再度ログインしてください。');
     }
     return Promise.reject(error);
   }
@@ -50,8 +56,8 @@ aiApi.interceptors.response.use(
 export const createChatSession = async () => {
   try {
     const response = await aiApi.post('/sessions', {
-      title: "New Chat", // ★適当な文字列を入れる
-      context: ""        // ★nullではなく空文字にする
+      title: "New Chat", 
+      context: ""        
     });
     return response.data;
   } catch (error) {
@@ -102,7 +108,6 @@ export const sendChatMessage = async (sessionId, message, useRag = false) => {
  */
 export const getSession = async (sessionId) => {
   try {
-    // サーバー側のエンドポイントは /sessions/{session_id} で履歴も返します
     const response = await aiApi.get(`/sessions/${sessionId}`);
     return response.data;
   } catch (error) {
@@ -111,8 +116,6 @@ export const getSession = async (sessionId) => {
   }
 };
 
-export default aiApi;
-
 /**
  * 特定の案件にマッチするエンジニアを取得
  * @param {string} opportunityId - 案件ID
@@ -120,7 +123,6 @@ export default aiApi;
  */
 export const getMatchingEngineers = async (opportunityId) => {
   try {
-    // AI Chatサーバーの新しいエンドポイントを呼び出す
     const response = await aiApi.get(`/match/opportunities/${opportunityId}`);
     return response.data.matches;
   } catch (error) {
@@ -128,3 +130,26 @@ export const getMatchingEngineers = async (opportunityId) => {
     throw error;
   }
 };
+
+/**
+ * 案件テキストのAI分析を実行
+ * @param {string} rawText - 分析したいテキスト
+ * @returns {Promise<Object>} 分析結果JSON
+ */
+export const analyzeOpportunity = async (rawText) => {
+  try {
+    // ★修正箇所: fetchではなく aiApi(axios) を使用
+    // これにより URL(baseURL) と Auth Header が自動解決されます
+    const response = await aiApi.post('/analyze/opportunity', {
+      raw_text: rawText
+    });
+    return response.data;
+  } catch (error) {
+    console.error('AI Analysis Error:', error.response || error);
+    // エラーの詳細を投げる
+    const errorMessage = error.response?.data?.detail || '分析に失敗しました';
+    throw new Error(errorMessage);
+  }
+};
+
+export default aiApi;

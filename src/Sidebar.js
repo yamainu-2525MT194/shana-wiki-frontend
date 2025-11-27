@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 
 function Sidebar({ user }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('token'); // 念のため両方削除
     navigate('/');
   };
 
@@ -45,6 +47,14 @@ function Sidebar({ user }) {
         <Link to="/chat" className="page-item">
           <span className="icon">🤖</span>
           <span className="title">AIチャット</span>
+        </Link>
+
+        {/* 修正箇所: 既存のデザインスタイルに合わせました */}
+        <Link to="/opportunities/analyze" className="page-item">
+          <span className="icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <AutoFixHighIcon fontSize="small" />
+          </span>
+          <span className="title">案件AI分析</span>
         </Link>
 
         <Link to="/admin" className="page-item">
