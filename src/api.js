@@ -96,4 +96,15 @@ export const createOpportunity = async (data) => {
   return response.data;
 };
 
+/**
+ * Wikiページ一覧をページネーション付きで取得
+ * @param {number} skip - 読み飛ばす件数 (page * rowsPerPage)
+ * @param {number} limit - 1ページあたりの件数
+ */
+export const getPages = async (skip = 0, limit = 10) => {
+    // クエリパラメータで skip と limit を送る
+    const response = await api.get(`/pages/?skip=${skip}&limit=${limit}`);
+    return response.data;
+};
+
 export default api;

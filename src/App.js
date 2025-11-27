@@ -19,6 +19,7 @@ import IncidentsPage from './IncidentsPage';
 import ChatPage from './ChatPage';
 import IncidentDetailPage from './IncidentDetailPage';
 import OpportunityAnalyzePage from './OpportunityAnalyzePage';
+import WikiListPage from './WikiListPage';
 import './App.css';
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
             <Route path="/incidents" element={<IncidentsPage />} />
             <Route path="/incidents/:incidentId" element={<IncidentDetailPage />} />
             <Route path="/opportunities/analyze" element={<OpportunityAnalyzePage />} />
+            <Route path="/wiki" element={<WikiListPage />} />
             <Route path="/chat" element={<ChatPage />} />
           </Route>
           {/* --- ↑↑↑ ログイン後のページは全てLayoutの中に配置 ↑↑↑ --- */}

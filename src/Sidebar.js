@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import ArticleIcon from '@mui/icons-material/Article';
 
 function Sidebar({ user }) {
   const navigate = useNavigate();
@@ -42,6 +43,13 @@ function Sidebar({ user }) {
         <Link to="/incidents" className="page-item">
           <span className="icon">⚠️</span>
           <span className="title">トラブル管理</span>
+        </Link>
+
+        <Link to="/wiki" className="page-item">
+          <span className="icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ArticleIcon fontSize="small" />
+          </span>
+          <span className="title">Wiki一覧</span>
         </Link>
 
         <Link to="/chat" className="page-item">
