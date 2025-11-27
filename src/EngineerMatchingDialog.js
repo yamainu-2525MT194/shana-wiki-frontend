@@ -6,33 +6,35 @@ import {
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { getMatchingEngineers } from './aiApi'; // aiApi.jsに定義済み
+import { getMatchingEngineers } from './aiApi'; 
 
 const EngineerMatchingDialog = ({ open, onClose, opportunity }) => {
   const [engineers, setEngineers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // ★★★ 修正箇所: fetchMatchesの定義を useEffect の中に移動しました ★★★
   useEffect(() => {
+    const fetchMatches = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        // AI APIを呼び出し
+        const matches = await getMatchingEngineers(opportunity.id);
+        setEngineers(matches);
+      } catch (err) {
+        console.error(err);
+        setError('マッチング処理に失敗しました。AIサーバーが起動しているか確認してください。');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (open && opportunity && opportunity.id) {
       fetchMatches();
     }
+    // 関数を中に移動したので、依存配列は [open, opportunity] だけでOKになります
   }, [open, opportunity]);
-
-  const fetchMatches = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      // AI APIを呼び出し
-      const matches = await getMatchingEngineers(opportunity.id);
-      setEngineers(matches);
-    } catch (err) {
-      console.error(err);
-      setError('マッチング処理に失敗しました。AIサーバーが起動しているか確認してください。');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
