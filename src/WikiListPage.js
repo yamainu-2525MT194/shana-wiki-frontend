@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getPages } from './api'; // api.js に getPages が追加されている前提
+import { getPages } from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, TablePagination, Chip, Stack
+  Button, TablePagination, Stack
 } from '@mui/material';
 import ArticleIcon from '@mui/icons-material/Article';
 import AddIcon from '@mui/icons-material/Add';
@@ -18,26 +18,25 @@ const WikiListPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
 
-  // ページデータの取得
-  const fetchPages = async () => {
-    setLoading(true);
-    try {
-      // BackendのページネーションAPIを呼び出す
-      // skip = 現在のページ番号 × 1ページあたりの件数
-      const data = await getPages(page * rowsPerPage, rowsPerPage);
-      setPages(data.pages);
-      setTotalCount(data.total);
-    } catch (error) {
-      console.error("Wiki一覧の取得に失敗しました:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ページ番号や表示件数が変わったら再取得
+  // ★★★ 修正: fetchPages を useEffect の中に移動 ★★★
   useEffect(() => {
+    const fetchPages = async () => {
+      setLoading(true);
+      try {
+        // BackendのページネーションAPIを呼び出す
+        // skip = 現在のページ番号 × 1ページあたりの件数
+        const data = await getPages(page * rowsPerPage, rowsPerPage);
+        setPages(data.pages);
+        setTotalCount(data.total);
+      } catch (error) {
+        console.error("Wiki一覧の取得に失敗しました:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPages();
-  }, [page, rowsPerPage]);
+  }, [page, rowsPerPage]); // 依存配列はこれでOKになります
 
   // ページ切り替え
   const handleChangePage = (event, newPage) => {
@@ -61,7 +60,7 @@ const WikiListPage = () => {
           variant="contained" 
           startIcon={<AddIcon />}
           component={Link} 
-          to="/pages/create" // 新規作成ページへのパス(既存にあれば)
+          to="/pages/create" 
         >
           新規ページ作成
         </Button>
@@ -126,7 +125,6 @@ const WikiListPage = () => {
               </Table>
             </TableContainer>
 
-            {/* ★★★ ページネーション部分 ★★★ */}
             <TablePagination
               component="div"
               count={totalCount}
