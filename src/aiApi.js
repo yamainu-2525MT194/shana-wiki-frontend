@@ -13,6 +13,8 @@ const AI_API_URL = isDevelopment
 
 const aiApi = axios.create({
   baseURL: AI_API_URL,
+  // ★追加: タイムアウトを90秒に設定 (Sonnet + RAG検索の待ち時間を考慮)
+  timeout: 90000,
 });
 
 // リクエストインターセプター: トークンを自動付与
