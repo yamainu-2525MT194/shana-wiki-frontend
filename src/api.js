@@ -9,7 +9,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 // 開発中は localhost:8000, 本番は Cloud Run
 const API_URL = isDevelopment 
-  ? 'http://localhost:8000' 
+  ? 'http://160.251.175.155:8000' 
   : 'https://backend-api-1060579851059.asia-northeast1.run.app';
 
 // ※ もし一時的に本番に繋ぎたい場合は、上記の条件分岐をコメントアウトして

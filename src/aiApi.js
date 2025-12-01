@@ -8,7 +8,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 // 開発中は localhost, 本番ビルド時は Cloud Run を自動で切り替え
 const AI_API_URL = isDevelopment 
-  ? 'http://localhost:8001' 
+  ? 'http://160.251.175.155:8001' 
   : 'https://shana-ai-chat-v2-1060579851059.asia-northeast1.run.app';
 
 const aiApi = axios.create({
