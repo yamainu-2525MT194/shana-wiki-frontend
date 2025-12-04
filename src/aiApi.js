@@ -3,8 +3,7 @@
 import axios from 'axios';
 
 // ★★★ 設定をローカル開発優先に戻します ★★★
-// Reactのローカル開発(npm start)時は true になります
-const isDevelopment = process.env.NODE_ENV === 'development';
+
 
 // 開発中は localhost, 本番ビルド時は Cloud Run を自動で切り替え
 const AI_API_URL = process.env.REACT_APP_AI_API_URL || 'https://shana-ai-chat-v2-1060579851059.asia-northeast1.run.app';

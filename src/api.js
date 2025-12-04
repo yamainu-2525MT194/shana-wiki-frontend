@@ -4,8 +4,7 @@ import axios from 'axios';
 
 // ★★★ 修正箇所: ローカル開発環境を優先する設定に戻します ★★★
 
-// 開発中 (npm start) かどうかを判定
-const isDevelopment = process.env.NODE_ENV === 'development';
+
 
 // 開発中は localhost:8000, 本番は Cloud Run
 const API_URL = process.env.REACT_APP_API_URL || 'https://backend-api-1060579851059.asia-northeast1.run.app';

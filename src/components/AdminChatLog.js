@@ -4,7 +4,7 @@ import { getAdminChatSessions, getAdminSessionMessages } from '../api';
 import { 
   Box, Typography, Paper, Table, TableBody, TableCell, 
   TableHead, TableRow, Button, Dialog, DialogTitle, 
-  DialogContent, DialogActions, Chip 
+  DialogContent, DialogActions
 } from '@mui/material';
 
 const AdminChatLog = () => {
