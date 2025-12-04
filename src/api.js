@@ -8,9 +8,7 @@ import axios from 'axios';
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 // 開発中は localhost:8000, 本番は Cloud Run
-const API_URL = isDevelopment 
-  ? 'http://160.251.175.155:8000' 
-  : 'https://backend-api-1060579851059.asia-northeast1.run.app';
+const API_URL = process.env.REACT_APP_API_URL || 'https://backend-api-1060579851059.asia-northeast1.run.app';
 
 // ※ もし一時的に本番に繋ぎたい場合は、上記の条件分岐をコメントアウトして
 // const API_URL = 'https://backend-api-...'; 
@@ -105,6 +103,22 @@ export const getPages = async (skip = 0, limit = 10) => {
     // クエリパラメータで skip と limit を送る
     const response = await api.get(`/pages/?skip=${skip}&limit=${limit}`);
     return response.data;
+};
+
+/**
+ * 管理者用: 全チャットセッション一覧を取得
+ */
+export const getAdminChatSessions = async (skip = 0, limit = 50) => {
+  const response = await api.get(`/admin/chat-logs/sessions?skip=${skip}&limit=${limit}`);
+  return response.data;
+};
+
+/**
+ * 管理者用: セッション内のメッセージ履歴を取得
+ */
+export const getAdminSessionMessages = async (sessionId) => {
+  const response = await api.get(`/admin/chat-logs/sessions/${sessionId}/messages`);
+  return response.data;
 };
 
 export default api;

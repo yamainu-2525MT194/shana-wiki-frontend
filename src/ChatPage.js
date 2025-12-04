@@ -12,7 +12,8 @@ import {
   IconButton,
   Tooltip,
   FormControlLabel,
-  Switch
+  Switch,
+  Link
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -20,6 +21,10 @@ import PersonIcon from '@mui/icons-material/Person';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import { createChatSession, sendChatMessage, getSession } from './aiApi';
+
+// ★ Markdown用ライブラリのインポート
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 function ChatPage() {
   const [sessionId, setSessionId] = useState(null);
@@ -50,12 +55,10 @@ function ChatPage() {
       setError(null);
       
       try {
-        // 1. ローカルストレージから前回のセッションIDを探す
         const storedSessionId = localStorage.getItem('chatSessionId');
         
         if (storedSessionId) {
           try {
-            // 2. 既存セッションの履歴を取得してみる
             console.log('既存セッションを復元中:', storedSessionId);
             const sessionData = await getSession(storedSessionId);
             
@@ -67,16 +70,14 @@ function ChatPage() {
               return;
             }
           } catch (err) {
-            console.warn('既存セッションの復元に失敗しました（期限切れ等の可能性）。新規作成します。');
-            // 復元失敗したらIDを消して新規作成へ進む
+            console.warn('既存セッションの復元に失敗しました。新規作成します。');
             localStorage.removeItem('chatSessionId');
           }
         }
 
-        // 3. 新規セッション作成
         const session = await createChatSession();
         setSessionId(session.id);
-        localStorage.setItem('chatSessionId', session.id); // IDを保存
+        localStorage.setItem('chatSessionId', session.id);
         setMessages([]);
         console.log('新規セッション作成成功:', session.id);
 
@@ -91,7 +92,6 @@ function ChatPage() {
     initSession();
   }, []);
 
-  // 新しいセッションを強制的に開始
   const handleNewSession = async () => {
     try {
       setIsLoading(true);
@@ -99,7 +99,6 @@ function ChatPage() {
       const session = await createChatSession();
       setSessionId(session.id);
       setMessages([]);
-      // 新しいIDを保存
       localStorage.setItem('chatSessionId', session.id);
       console.log('新しいセッションを開始:', session.id);
     } catch (err) {
@@ -110,7 +109,6 @@ function ChatPage() {
     }
   };
 
-  // メッセージ送信
   const handleSend = async () => {
     if (!inputMessage.trim() || !sessionId || isLoading) return;
 
@@ -118,7 +116,6 @@ function ChatPage() {
     setInputMessage('');
     setError(null);
 
-    // ユーザーメッセージを即座に表示
     const newUserMessage = {
       role: 'user',
       content: userMessage,
@@ -128,11 +125,8 @@ function ChatPage() {
 
     try {
       setIsLoading(true);
-
-      // AI応答を取得 (RAG機能のON/OFFを反映)
       const response = await sendChatMessage(sessionId, userMessage, useRag);
 
-      // AIメッセージを追加
       const aiMessage = {
         role: 'assistant',
         content: response.content,
@@ -143,15 +137,12 @@ function ChatPage() {
     } catch (err) {
       console.error('メッセージ送信エラー:', err);
       setError('メッセージの送信に失敗しました。もう一度お試しください。');
-      
-      // エラーの場合、ユーザーメッセージを削除
       setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Enterキーで送信
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -159,20 +150,42 @@ function ChatPage() {
     }
   };
 
-  // 初期化中
   if (isInitializing) {
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '80vh' 
-      }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
         <CircularProgress />
         <Typography sx={{ ml: 2 }}>チャットを準備中...</Typography>
       </Box>
     );
   }
+
+  // ★ Markdownのスタイル定義 (MUIコンポーネントへのマッピング)
+  const markdownComponents = {
+    // 段落
+    p: ({node, ...props}) => <Typography variant="body1" sx={{ mb: 1, '&:last-child': { mb: 0 } }} {...props} />,
+    // 見出し (チャット内なので少し小さめに調整)
+    h1: ({node, ...props}) => <Typography variant="h6" sx={{ mt: 2, mb: 1, fontWeight: 'bold' }} {...props} />,
+    h2: ({node, ...props}) => <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, fontWeight: 'bold' }} {...props} />,
+    h3: ({node, ...props}) => <Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5, fontWeight: 'bold' }} {...props} />,
+    // リスト
+    ul: ({node, ...props}) => <Box component="ul" sx={{ pl: 2, my: 1 }} {...props} />,
+    ol: ({node, ...props}) => <Box component="ol" sx={{ pl: 2, my: 1 }} {...props} />,
+    li: ({node, ...props}) => <li style={{ marginBottom: '4px' }} {...props} />,
+    // リンク
+    a: ({node, ...props}) => <Link target="_blank" rel="noopener" {...props} />,
+    // コードブロック (簡易的)
+    code: ({node, inline, className, children, ...props}) => {
+      return inline ? (
+        <code style={{ backgroundColor: 'rgba(0,0,0,0.1)', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }} {...props}>
+          {children}
+        </code>
+      ) : (
+        <Box component="pre" sx={{ backgroundColor: '#2d2d2d', color: '#fff', p: 1.5, borderRadius: 1, overflowX: 'auto', my: 1 }}>
+          <code {...props}>{children}</code>
+        </Box>
+      );
+    }
+  };
 
   return (
     <Box sx={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', p: 3 }}>
@@ -183,39 +196,45 @@ function ChatPage() {
             🤖 AIチャット
           </Typography>
           
-          {/* RAG切り替えスイッチ */}
           <Paper elevation={0} sx={{ bgcolor: '#f5f5f5', px: 2, py: 0.5, borderRadius: 4, border: '1px solid #e0e0e0' }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={useRag}
-                  onChange={(e) => setUseRag(e.target.checked)}
-                  color="primary"
-                  size="small"
-                />
-              }
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem' }}>
-                  <LibraryBooksIcon sx={{ fontSize: 18, mr: 0.5, color: useRag ? 'primary.main' : 'text.disabled' }} />
-                  Wiki検索
+            {/* ★ Tooltipで囲むことで、マウスホバー時に説明を表示します */}
+            <Tooltip 
+              title={
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="caption" display="block">ON: 社内データを検索して回答 (精度重視)</Typography>
+                  <Typography variant="caption" display="block">OFF: 一般知識のみで回答 (速度重視)</Typography>
                 </Box>
-              }
-            />
+              } 
+              arrow 
+              placement="bottom"
+            >
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={useRag}
+                    onChange={(e) => setUseRag(e.target.checked)}
+                    color="primary"
+                    size="small"
+                  />
+                }
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem' }}>
+                    <LibraryBooksIcon sx={{ fontSize: 18, mr: 0.5, color: useRag ? 'primary.main' : 'text.disabled' }} />
+                    Wiki検索
+                  </Box>
+                }
+              />
+            </Tooltip>
           </Paper>
         </Box>
 
         <Tooltip title="新しいチャットを開始 (履歴をクリア)">
-          <IconButton 
-            onClick={handleNewSession} 
-            disabled={isLoading}
-            color="primary"
-          >
+          <IconButton onClick={handleNewSession} disabled={isLoading} color="primary">
             <RefreshIcon />
           </IconButton>
         </Tooltip>
       </Box>
 
-      {/* エラー表示 */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
@@ -226,23 +245,14 @@ function ChatPage() {
       <Paper 
         elevation={3} 
         sx={{ 
-          flexGrow: 1, 
-          p: 3, 
-          mb: 2, 
-          overflowY: 'auto',
-          backgroundColor: '#f5f5f5',
-          display: 'flex',
-          flexDirection: 'column'
+          flexGrow: 1, p: 3, mb: 2, overflowY: 'auto',
+          backgroundColor: '#f5f5f5', display: 'flex', flexDirection: 'column'
         }}
       >
         {messages.length === 0 && !isLoading && (
           <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            height: '100%',
-            color: 'text.secondary'
+            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+            height: '100%', color: 'text.secondary'
           }}>
             <SmartToyIcon sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
             <Typography variant="h6">チャットを開始しましょう</Typography>
@@ -256,8 +266,7 @@ function ChatPage() {
           <Box 
             key={index} 
             sx={{ 
-              display: 'flex', 
-              mb: 2,
+              display: 'flex', mb: 2,
               justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start'
             }}
           >
@@ -273,15 +282,26 @@ function ChatPage() {
                 p: 2, 
                 maxWidth: '70%',
                 backgroundColor: msg.role === 'user' ? '#e3f2fd' : '#fff',
-                borderRadius: 2
+                borderRadius: 2,
+                // ★ Markdown内の要素に対するデフォルトスタイル
+                '& ul, & ol': { pl: 3 },
+                '& a': { color: '#1976d2' }
               }}
             >
-              <Typography 
-                variant="body1" 
-                sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-              >
-                {msg.content}
-              </Typography>
+              {msg.role === 'assistant' ? (
+                // AIの回答はMarkdownとしてレンダリング
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {msg.content}
+                </ReactMarkdown>
+              ) : (
+                // ユーザーの入力はそのまま表示
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                  {msg.content}
+                </Typography>
+              )}
             </Paper>
 
             {msg.role === 'user' && (
@@ -292,7 +312,6 @@ function ChatPage() {
           </Box>
         ))}
 
-        {/* ローディング表示 */}
         {isLoading && (
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Avatar sx={{ bgcolor: '#1976d2', mr: 2 }}>
@@ -312,7 +331,6 @@ function ChatPage() {
 
       <Divider sx={{ mb: 2 }} />
 
-      {/* 入力エリア */}
       <Box sx={{ display: 'flex', gap: 2 }}>
         <TextField
           fullWidth
@@ -336,8 +354,7 @@ function ChatPage() {
           送信
         </Button>
       </Box>
-
-      {/* セッションID表示 (デバッグ用) */}
+      
       <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'right' }}>
         セッションID: {sessionId || '未作成'}
       </Typography>
