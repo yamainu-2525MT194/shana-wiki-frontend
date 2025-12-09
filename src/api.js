@@ -2,10 +2,6 @@
 
 import axios from 'axios';
 
-// ★★★ 修正箇所: ローカル開発環境を優先する設定に戻します ★★★
-
-
-
 // 開発中は localhost:8000, 本番は Cloud Run
 const API_URL = process.env.REACT_APP_API_URL || 'https://backend-api-1060579851059.asia-northeast1.run.app';
 
@@ -93,11 +89,6 @@ export const createOpportunity = async (data) => {
   return response.data;
 };
 
-/**
- * Wikiページ一覧をページネーション付きで取得
- * @param {number} skip - 読み飛ばす件数 (page * rowsPerPage)
- * @param {number} limit - 1ページあたりの件数
- */
 export const getPages = async (skip = 0, limit = 10) => {
     // クエリパラメータで skip と limit を送る
     const response = await api.get(`/pages/?skip=${skip}&limit=${limit}`);
@@ -105,10 +96,17 @@ export const getPages = async (skip = 0, limit = 10) => {
 };
 
 /**
+ * 管理者用: 全チャットセッション一覧を取得 (ソート対応)
+ * @param {number} skip 
+ * @param {number} limit 
+ * @param {string} sortBy - updated_at, created_at, user_name, title
+ * @param {string} order - desc, asc
+ */
+/**
  * 管理者用: 全チャットセッション一覧を取得
  */
-export const getAdminChatSessions = async (skip = 0, limit = 50) => {
-  const response = await api.get(`/admin/chat-logs/sessions?skip=${skip}&limit=${limit}`);
+export const getAdminChatSessions = async (skip = 0, limit = 50, sortBy = 'updated_at', order = 'desc') => {
+  const response = await api.get(`/admin/chat-logs/sessions?skip=${skip}&limit=${limit}&sort_by=${sortBy}&order=${order}`);
   return response.data;
 };
 
