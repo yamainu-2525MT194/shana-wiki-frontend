@@ -118,4 +118,14 @@ export const getAdminSessionMessages = async (sessionId) => {
   return response.data;
 };
 
+/**
+ * 管理者用: チャットセッションを一括削除
+ * @param {Array<string>} sessionIds - 削除するセッションIDの配列
+ */
+export const deleteChatSessions = async (sessionIds) => {
+  // DELETEメソッドでbodyを送る場合は data プロパティを使います
+  const response = await api.delete('/admin/chat-logs/sessions', { data: sessionIds });
+  return response.data;
+};
+
 export default api;
