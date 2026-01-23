@@ -36,7 +36,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route 
-              path="/pages/new" 
+              path="/pages/create" 
               element={
                 <PageEditor 
                   onSaveSuccess={() => window.location.href = '/dashboard'} 
