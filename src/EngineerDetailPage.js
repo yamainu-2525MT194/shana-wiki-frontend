@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress, Button, Grid, Chip,
-  TextField, FormControl, InputLabel, Select, MenuItem,
+  TextField, FormControl, Select, MenuItem,
   Alert, Divider, Avatar, Tabs, Tab, Stack, IconButton,
   Card, CardContent, CardHeader, List, ListItem, ListItemIcon, ListItemText
 } from '@mui/material';
