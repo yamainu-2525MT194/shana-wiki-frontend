@@ -33,6 +33,19 @@ const getStatusColor = (status) => {
   }
 };
 
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+    return (
+      <div role="tabpanel" hidden={value !== index} {...other}>
+        {value === index && (
+          <Box sx={{ p: 3 }}>
+            {children}
+          </Box>
+        )}
+      </div>
+    );
+  }
+
 function EngineerDetailPage() {
   const { engineerId } = useParams();
   const [engineer, setEngineer] = useState(null);
@@ -180,19 +193,6 @@ function EngineerDetailPage() {
       hour: '2-digit', minute: '2-digit'
     });
   };
-
-  function TabPanel(props) {
-    const { children, value, index, ...other } = props;
-    return (
-      <div role="tabpanel" hidden={value !== index} {...other}>
-        {value === index && (
-          <Box sx={{ p: 3 }}>
-            {children}
-          </Box>
-        )}
-      </div>
-    );
-  }
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', height: '80vh', alignItems: 'center' }}><CircularProgress /></Box>;
   if (!engineer) return <Typography>エンジニアが見つかりません。</Typography>;
