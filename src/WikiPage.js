@@ -139,8 +139,10 @@ function WikiPage() {
 
         {/* 本文エリア */}
         <Paper sx={{ p: 4, mb: 4, minHeight: '200px' }}>
-          <ReactMarkdown className="markdown-body">{page.content}</ReactMarkdown>
-        </Paper>
+  <div className="markdown-body">
+    <ReactMarkdown>{page.content}</ReactMarkdown>
+  </div>
+</Paper>
 
         {/* ★★★ 添付ファイル表示エリア (修正版) ★★★ */}
         {page.files && page.files.length > 0 && (
