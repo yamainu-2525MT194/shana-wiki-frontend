@@ -173,7 +173,7 @@ function PageEditor({ onSaveSuccess, onCancel }) {
           title: page.title,
           content: page.content,
           allowed_department_ids: page.allowed_department_ids,
-          engineer_id: page.engineer_id
+          engineer_id: page.engineer_id === '' ? null : page.engineer_id
         };
         await api.put(`/pages/${pageId}`, jsonData);
 
