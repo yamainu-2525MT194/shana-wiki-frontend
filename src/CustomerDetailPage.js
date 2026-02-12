@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress,
-  List, ListItem, ListItemText, Divider, Button, TextField, Grid,
+  Button, TextField, Grid,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip,
   Link as MuiLink 
 } from '@mui/material';
