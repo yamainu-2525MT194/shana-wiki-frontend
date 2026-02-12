@@ -21,6 +21,10 @@ function CustomerDetailPage() {
   const [openMatchDialog, setOpenMatchDialog] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
 
+  // ★★★ 追加: 接触履歴の編集機能 ★★★
+  const [editingContactId, setEditingContactId] = useState(null);
+  const [editingNotes, setEditingNotes] = useState('');
+
   const fetchCustomerDetails = useCallback(async () => {
     setLoading(true);
     try {
@@ -55,15 +59,64 @@ function CustomerDetailPage() {
       return;
     }
     try {
-      await api.post(`/customers/${customerId}/contacts/`, {
+      const response = await api.post(`/customers/${customerId}/contacts/`, {
         notes: newNote
       });
+      console.log("✅ Contact created:", response.data); // ★デバッグ出力
       alert('接触履歴を保存しました。');
-      setNewNote(''); 
-      fetchCustomerDetails(); 
+      setNewNote('');
+      // ★重要: 保存後にデータを再取得して画面を更新
+      await fetchCustomerDetails();
     } catch (error) {
       console.error("接触履歴の保存に失敗しました:", error);
       alert('保存に失敗しました。');
+    }
+  };
+
+  // ★★★ 追加: 編集開始 ★★★
+  const handleEditContact = (contact) => {
+    setEditingContactId(contact.id);
+    setEditingNotes(contact.notes);
+  };
+
+  // ★★★ 追加: 編集キャンセル ★★★
+  const handleCancelEdit = () => {
+    setEditingContactId(null);
+    setEditingNotes('');
+  };
+
+  // ★★★ 追加: 編集保存 ★★★
+  const handleUpdateContact = async (contactId) => {
+    if (!editingNotes.trim()) {
+      alert('メモを入力してください。');
+      return;
+    }
+    try {
+      await api.put(`/contacts/${contactId}`, {
+        notes: editingNotes
+      });
+      alert('接触履歴を更新しました。');
+      setEditingContactId(null);
+      setEditingNotes('');
+      fetchCustomerDetails();
+    } catch (error) {
+      console.error("接触履歴の更新に失敗しました:", error);
+      alert('更新に失敗しました。');
+    }
+  };
+
+  // ★★★ 追加: 削除 ★★★
+  const handleDeleteContact = async (contactId) => {
+    if (!window.confirm('この接触履歴を削除しますか？')) {
+      return;
+    }
+    try {
+      await api.delete(`/contacts/${contactId}`);
+      alert('接触履歴を削除しました。');
+      fetchCustomerDetails();
+    } catch (error) {
+      console.error("接触履歴の削除に失敗しました:", error);
+      alert('削除に失敗しました。');
     }
   };
 
@@ -180,19 +233,86 @@ function CustomerDetailPage() {
             <Paper sx={{ p: 2, mt: 2 }}>
               <Typography variant="h6" gutterBottom>接触履歴</Typography>
               {customer.contacts && customer.contacts.length > 0 ? (
-                <List>
-                  {[...customer.contacts].sort((a, b) => new Date(b.contact_date) - new Date(a.contact_date)).map((contact, index) => (
-                    <React.Fragment key={contact.id}>
-                      <ListItem>
-                        <ListItemText
-                          primary={contact.notes}
-                          secondary={`日時: ${new Date(contact.contact_date).toLocaleString('ja-JP')}`}
-                        />
-                      </ListItem>
-                      {index < customer.contacts.length - 1 && <Divider />}
-                    </React.Fragment>
-                  ))}
-                </List>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                        <TableCell><strong>日時</strong></TableCell>
+                        <TableCell><strong>内容</strong></TableCell>
+                        <TableCell><strong>担当者</strong></TableCell>
+                        <TableCell align="center"><strong>アクション</strong></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {[...customer.contacts].sort((a, b) => new Date(b.contact_date) - new Date(a.contact_date)).map((contact) => (
+                        <TableRow key={contact.id} sx={{ '&:hover': { backgroundColor: '#fafafa' } }}>
+                          <TableCell sx={{ width: '180px' }}>
+                            {new Date(contact.contact_date).toLocaleString('ja-JP')}
+                          </TableCell>
+                          <TableCell sx={{ width: '350px' }}>
+                            {editingContactId === contact.id ? (
+                              <TextField
+                                fullWidth
+                                multiline
+                                rows={2}
+                                value={editingNotes}
+                                onChange={(e) => setEditingNotes(e.target.value)}
+                                size="small"
+                              />
+                            ) : (
+                              contact.notes
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ width: '150px' }}>
+                            {contact.user?.name || '未登録'}
+                          </TableCell>
+                          <TableCell align="center" sx={{ width: '150px' }}>
+                            {editingContactId === contact.id ? (
+                              <>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="success"
+                                  onClick={() => handleUpdateContact(contact.id)}
+                                  sx={{ mr: 1 }}
+                                >
+                                  保存
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={handleCancelEdit}
+                                >
+                                  キャンセル
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  color="primary"
+                                  onClick={() => handleEditContact(contact)}
+                                  sx={{ mr: 1 }}
+                                >
+                                  編集
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  color="error"
+                                  onClick={() => handleDeleteContact(contact.id)}
+                                >
+                                  削除
+                                </Button>
+                              </>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               ) : (
                 <Typography>接触履歴はまだありません。</Typography>
               )}
