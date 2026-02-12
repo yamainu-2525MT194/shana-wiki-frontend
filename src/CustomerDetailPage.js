@@ -17,6 +17,12 @@ function CustomerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState('');
 
+  const [newContactDate, setNewContactDate] = useState(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  });
+
   // ★★★ 追加: マッチングダイアログ用のステート ★★★
   const [openMatchDialog, setOpenMatchDialog] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
@@ -60,11 +66,18 @@ function CustomerDetailPage() {
     }
     try {
       const response = await api.post(`/customers/${customerId}/contacts/`, {
-        notes: newNote
+        notes: newNote,
+        contact_date: new Date(newContactDate).toISOString() // ISO形式に変換
       });
       console.log("✅ Contact created:", response.data); // ★デバッグ出力
       alert('接触履歴を保存しました。');
       setNewNote('');
+
+      // 日付を現在時刻にリセット
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      setNewContactDate(now.toISOString().slice(0, 16));
+
       // ★重要: 保存後にデータを再取得して画面を更新
       await fetchCustomerDetails();
     } catch (error) {
@@ -153,6 +166,19 @@ function CustomerDetailPage() {
           <Grid item xs={12} md={6}>
             <Paper component="form" onSubmit={handleSaveContact} sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>新しい接触履歴を追加</Typography>
+              {/* ★★★ 追加: 日時入力フィールド ★★★ */}
+              <TextField
+                label="接触日時"
+                type="datetime-local"
+                fullWidth
+                value={newContactDate}
+                onChange={(e) => setNewContactDate(e.target.value)}
+                sx={{ mb: 2 }}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+
               <TextField
                 label="接触内容のメモ"
                 multiline
@@ -249,20 +275,23 @@ function CustomerDetailPage() {
                           <TableCell sx={{ width: '180px' }}>
                             {new Date(contact.contact_date).toLocaleString('ja-JP')}
                           </TableCell>
-                          <TableCell sx={{ width: '350px' }}>
+
+                          {/* ★★★ 修正: ここが重要！whiteSpace: 'pre-wrap' で改行を表示 ★★★ */}
+                          <TableCell sx={{ width: '350px', whiteSpace: 'pre-wrap', verticalAlign: 'top' }}>
                             {editingContactId === contact.id ? (
                               <TextField
                                 fullWidth
                                 multiline
-                                rows={2}
+                                rows={4} // 編集時も広く
                                 value={editingNotes}
                                 onChange={(e) => setEditingNotes(e.target.value)}
                                 size="small"
                               />
                             ) : (
-                              contact.notes
+                              contact.notes // ここが改行されて表示されます
                             )}
                           </TableCell>
+
                           <TableCell sx={{ width: '150px' }}>
                             {contact.user?.name || '未登録'}
                           </TableCell>
