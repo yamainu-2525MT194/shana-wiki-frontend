@@ -32,7 +32,7 @@ function OpportunityDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ status: '', notes: '', interview_date: '', interview_count: '', has_candidate: false });
+  const [editData, setEditData] = useState({ status: '', description: '', notes: '', interview_date: '', interview_count: '', has_candidate: false });
   
   // ★★★ AIマッチング結果を保持するState ★★★
   const [matchingEngineers, setMatchingEngineers] = useState(null);
@@ -48,6 +48,7 @@ function OpportunityDetailPage() {
       setOpportunity(response.data);
       setEditData({
         status: response.data.status,
+        description: response.data.description || '',
         notes: response.data.notes || '',
         interview_date: response.data.interview_date ? response.data.interview_date.slice(0, 16) : '',
         interview_count: response.data.interview_count ?? '',
@@ -94,6 +95,7 @@ function OpportunityDetailPage() {
       await Promise.all([
         api.put(`/opportunities/${opportunityId}/status`, { status: editData.status }),
         api.put(`/opportunities/${opportunityId}/details`, {
+          description: editData.description || null,
           notes: editData.notes,
           interview_date: editData.interview_date || null,
           interview_count: editData.interview_count !== '' ? Number(editData.interview_count) : null,
@@ -114,6 +116,7 @@ function OpportunityDetailPage() {
     setIsEditing(false);
     setEditData({
       status: opportunity.status,
+      description: opportunity.description || '',
       notes: opportunity.notes || '',
       interview_date: opportunity.interview_date ? opportunity.interview_date.slice(0, 16) : '',
       interview_count: opportunity.interview_count ?? '',
@@ -259,9 +262,45 @@ function OpportunityDetailPage() {
           </Paper>
         </Grid>
 
-        {/* --- 詳細メモ（右カラム） --- */}
+        {/* --- 案件内容（右カラム上段） --- */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" gutterBottom>案件内容</Typography>
+            {isEditing ? (
+              <TextField
+                label="案件内容"
+                multiline
+                rows={8}
+                fullWidth
+                variant="outlined"
+                placeholder="案件の概要・要件・条件などを記入してください"
+                value={editData.description}
+                onChange={(e) => handleEditChange('description', e.target.value)}
+              />
+            ) : (
+              <Box
+                sx={{
+                  minHeight: 150,
+                  p: 1.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  overflowY: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  fontFamily: 'monospace',
+                  fontSize: '0.9rem',
+                  bgcolor: 'grey.50',
+                }}
+              >
+                {opportunity.description || '案件内容はまだ入力されていません。'}
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+
+        {/* --- 詳細メモ・進捗（右カラム下段） --- */}
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom>詳細メモ・進捗</Typography>
             {isEditing ? (
               <TextField
