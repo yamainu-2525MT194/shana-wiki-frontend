@@ -4,8 +4,9 @@ import api from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress, Button, Grid, Chip,
   TextField, FormControl, InputLabel, Select, MenuItem,
-  Alert, // ★★★ Alertを追加 ★★★
-  List, ListItem, ListItemText 
+  Alert,
+  List, ListItem, ListItemText,
+  Switch, FormControlLabel
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -31,7 +32,7 @@ function OpportunityDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ status: '', notes: '' });
+  const [editData, setEditData] = useState({ status: '', notes: '', interview_date: '', interview_count: '', has_candidate: false });
   
   // ★★★ AIマッチング結果を保持するState ★★★
   const [matchingEngineers, setMatchingEngineers] = useState(null);
@@ -47,7 +48,10 @@ function OpportunityDetailPage() {
       setOpportunity(response.data);
       setEditData({
         status: response.data.status,
-        notes: response.data.notes || ''
+        notes: response.data.notes || '',
+        interview_date: response.data.interview_date ? response.data.interview_date.slice(0, 16) : '',
+        interview_count: response.data.interview_count ?? '',
+        has_candidate: response.data.has_candidate ?? false,
       });
     } catch (error) {
       console.error("案件詳細の取得に失敗しました:", error);
@@ -89,7 +93,12 @@ function OpportunityDetailPage() {
       setLoading(true);
       await Promise.all([
         api.put(`/opportunities/${opportunityId}/status`, { status: editData.status }),
-        api.put(`/opportunities/${opportunityId}/details`, { notes: editData.notes })
+        api.put(`/opportunities/${opportunityId}/details`, {
+          notes: editData.notes,
+          interview_date: editData.interview_date || null,
+          interview_count: editData.interview_count !== '' ? Number(editData.interview_count) : null,
+          has_candidate: editData.has_candidate,
+        })
       ]);
       alert('案件情報を更新しました。');
       setIsEditing(false);
@@ -105,7 +114,10 @@ function OpportunityDetailPage() {
     setIsEditing(false);
     setEditData({
       status: opportunity.status,
-      notes: opportunity.notes || ''
+      notes: opportunity.notes || '',
+      interview_date: opportunity.interview_date ? opportunity.interview_date.slice(0, 16) : '',
+      interview_count: opportunity.interview_count ?? '',
+      has_candidate: opportunity.has_candidate ?? false,
     });
   };
 
@@ -187,6 +199,63 @@ function OpportunityDetailPage() {
                 </Box>
               )}
             </Box>
+
+            <Box sx={{ mt: 2 }}>
+              {isEditing ? (
+                <TextField
+                  label="面談日時"
+                  type="datetime-local"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  value={editData.interview_date}
+                  onChange={(e) => handleEditChange('interview_date', e.target.value)}
+                />
+              ) : (
+                <Typography>
+                  <strong>面談日時:</strong>{' '}
+                  {opportunity.interview_date
+                    ? new Date(opportunity.interview_date).toLocaleString('ja-JP')
+                    : '未設定'}
+                </Typography>
+              )}
+            </Box>
+
+            <Box sx={{ mt: 2 }}>
+              {isEditing ? (
+                <TextField
+                  label="面談回数"
+                  type="number"
+                  fullWidth
+                  inputProps={{ min: 0 }}
+                  value={editData.interview_count}
+                  onChange={(e) => handleEditChange('interview_count', e.target.value)}
+                />
+              ) : (
+                <Typography>
+                  <strong>面談回数:</strong>{' '}
+                  {opportunity.interview_count != null ? `${opportunity.interview_count}回` : '未設定'}
+                </Typography>
+              )}
+            </Box>
+
+            <Box sx={{ mt: 2 }}>
+              {isEditing ? (
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={editData.has_candidate}
+                      onChange={(e) => handleEditChange('has_candidate', e.target.checked)}
+                    />
+                  }
+                  label="候補者あり"
+                />
+              ) : (
+                <Typography>
+                  <strong>候補者の有無:</strong>{' '}
+                  {opportunity.has_candidate == null ? '未設定' : (opportunity.has_candidate ? 'あり' : 'なし')}
+                </Typography>
+              )}
+            </Box>
           </Paper>
         </Grid>
 
@@ -198,7 +267,7 @@ function OpportunityDetailPage() {
               <TextField
                 label="詳細メモ"
                 multiline
-                rows={10} 
+                rows={20}
                 fullWidth
                 variant="outlined"
                 value={editData.notes}
@@ -206,9 +275,23 @@ function OpportunityDetailPage() {
                 sx={{ flexGrow: 1 }}
               />
             ) : (
-              <Typography style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  minHeight: 400,
+                  p: 1.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  overflowY: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  fontFamily: 'monospace',
+                  fontSize: '0.9rem',
+                  bgcolor: 'grey.50',
+                }}
+              >
                 {opportunity.notes || 'メモはまだありません。'}
-              </Typography>
+              </Box>
             )}
           </Paper>
         </Grid>
