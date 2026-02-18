@@ -84,7 +84,7 @@ const LoginHistoryPage = () => {
                                 .map((row) => (
                                     <TableRow hover key={row.id}>
                                         <TableCell>
-                                            {formatTimestamp(row.timestamp)}
+                                            {formatTimestamp(row.login_at)}
                                         </TableCell>
                                         <TableCell>{row.email}</TableCell>
                                         <TableCell>
