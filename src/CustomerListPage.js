@@ -3,7 +3,8 @@ import api from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button,
-  Link as MuiLink, TextField, InputAdornment, TableSortLabel
+  Link as MuiLink, TextField, InputAdornment, TableSortLabel,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { Link } from 'react-router-dom';
@@ -13,6 +14,17 @@ function CustomerListPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [order, setOrder] = useState('desc'); // ★ ソート順のステート
+
+  // ★ 新規顧客登録ダイアログ用のステート
+  const [openDialog, setOpenDialog] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    company_name: '',
+    contact_person_name: '',
+    email: '',
+    phone_number: '',
+    url: '',
+    memo: ''
+  });
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -32,6 +44,35 @@ function CustomerListPage() {
   const handleRequestSort = () => {
     const isAsc = order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
+  };
+
+  const handleOpenDialog = () => setOpenDialog(true);
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setNewCustomer({
+      company_name: '', contact_person_name: '', email: '', phone_number: '', url: '', memo: ''
+    });
+  };
+
+  const handleCreateCustomer = async () => {
+    if (!newCustomer.company_name.trim()) {
+      alert("会社名は必須です。");
+      return;
+    }
+    try {
+      await api.post('/customers/', newCustomer);
+      alert('新規顧客を登録しました。');
+      handleCloseDialog();
+      
+      // リスト再取得
+      setLoading(true);
+      const response = await api.get('/customers/');
+      setCustomers(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("顧客の登録に失敗しました:", error);
+      alert('登録に失敗しました。');
+    }
   };
 
   const filteredCustomers = customers.filter(c => 
@@ -61,8 +102,8 @@ function CustomerListPage() {
             <Typography variant="h4" component="h1" gutterBottom>
               顧客管理
             </Typography>
-            {/* 新規登録ボタンのリンク先を /admin から /customers/new に変更（将来的な拡張のため） */}
-            <Button component={Link} to="/admin" variant="contained">
+            {/* 新規登録ボタンをダイアログ表示に変更 */}
+            <Button variant="contained" onClick={handleOpenDialog}>
                 新規顧客を登録
             </Button>
         </Box>
@@ -145,6 +186,76 @@ function CustomerListPage() {
           </Paper>
         )}
       </Box>
+
+      {/* ★★★ 新規顧客登録ダイアログ ★★★ */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
+        <DialogTitle>新規顧客登録</DialogTitle>
+        <DialogContent dividers>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="会社名 (必須)"
+            fullWidth
+            variant="outlined"
+            value={newCustomer.company_name}
+            onChange={(e) => setNewCustomer({ ...newCustomer, company_name: e.target.value })}
+            required
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="担当者名"
+            fullWidth
+            variant="outlined"
+            value={newCustomer.contact_person_name}
+            onChange={(e) => setNewCustomer({ ...newCustomer, contact_person_name: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Email"
+            type="email"
+            fullWidth
+            variant="outlined"
+            value={newCustomer.email}
+            onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="電話番号"
+            fullWidth
+            variant="outlined"
+            value={newCustomer.phone_number}
+            onChange={(e) => setNewCustomer({ ...newCustomer, phone_number: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="企業URL"
+            fullWidth
+            variant="outlined"
+            placeholder="https://..."
+            value={newCustomer.url}
+            onChange={(e) => setNewCustomer({ ...newCustomer, url: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="全体メモ"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows={3}
+            value={newCustomer.memo}
+            onChange={(e) => setNewCustomer({ ...newCustomer, memo: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="inherit">キャンセル</Button>
+          <Button onClick={handleCreateCustomer} variant="contained" color="primary">登録</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
