@@ -3,7 +3,7 @@ import api from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button,
-  Link as MuiLink, TextField, InputAdornment
+  Link as MuiLink, TextField, InputAdornment, TableSortLabel
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { Link } from 'react-router-dom';
@@ -12,6 +12,7 @@ function CustomerListPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [order, setOrder] = useState('desc'); // ★ ソート順のステート
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -28,10 +29,26 @@ function CustomerListPage() {
     fetchCustomers();
   }, []);
 
+  const handleRequestSort = () => {
+    const isAsc = order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+  };
+
   const filteredCustomers = customers.filter(c => 
     (c.company_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     (c.contact_person_name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
+    const dateA = a.last_contact_date ? new Date(a.last_contact_date).getTime() : 0;
+    const dateB = b.last_contact_date ? new Date(b.last_contact_date).getTime() : 0;
+    
+    if (order === 'desc') {
+      return dateB - dateA;
+    } else {
+      return dateA - dateB;
+    }
+  });
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
@@ -78,11 +95,19 @@ function CustomerListPage() {
                   <TableCell>Email</TableCell>
                   <TableCell>電話番号</TableCell>
                   <TableCell align="center">進行中案件</TableCell>
-                  <TableCell>最終接触日</TableCell>
+                  <TableCell>
+                    <TableSortLabel
+                      active={true}
+                      direction={order}
+                      onClick={handleRequestSort}
+                    >
+                      最終接触日
+                    </TableSortLabel>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredCustomers.map((customer) => (
+                {sortedCustomers.map((customer) => (
                   <TableRow key={customer.id} hover>
                     <TableCell component="th" scope="row">
                       {/* ★★★ 会社名を詳細ページへのリンクに変更 ★★★ */}
