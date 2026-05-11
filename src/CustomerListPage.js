@@ -77,6 +77,8 @@ function CustomerListPage() {
                   <TableCell>担当者名</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>電話番号</TableCell>
+                  <TableCell align="center">進行中案件</TableCell>
+                  <TableCell>最終接触日</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -91,6 +93,18 @@ function CustomerListPage() {
                     <TableCell>{customer.contact_person_name}</TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>{customer.phone_number}</TableCell>
+                    <TableCell align="center">
+                      {customer.active_opportunity_count > 0 ? (
+                        <Typography color="primary" fontWeight="bold">{customer.active_opportunity_count}</Typography>
+                      ) : (
+                        <Typography color="text.secondary">0</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {customer.last_contact_date 
+                        ? new Date(customer.last_contact_date).toLocaleDateString('ja-JP') 
+                        : <Typography color="text.secondary" variant="body2">記録なし</Typography>}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -33,11 +33,16 @@ function CustomerDetailPage() {
   const [editingContactId, setEditingContactId] = useState(null);
   const [editingNotes, setEditingNotes] = useState('');
 
+  // ★★★ 追加: 顧客情報編集用のステート ★★★
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+  const [editCustomerData, setEditCustomerData] = useState({});
+
   const fetchCustomerDetails = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get(`/customers/${customerId}`);
       setCustomer(response.data);
+      setEditCustomerData(response.data); // 編集用データにもセット
     } catch (error) {
       console.error("顧客詳細の取得に失敗しました:", error);
     } finally {
@@ -58,6 +63,19 @@ function CustomerDetailPage() {
   const handleCloseMatch = () => {
     setOpenMatchDialog(false);
     setSelectedOpportunity(null);
+  };
+
+  // ★★★ 追加: 顧客情報の保存処理 ★★★
+  const handleSaveCustomer = async () => {
+    try {
+      await api.put(`/customers/${customerId}`, editCustomerData);
+      alert('顧客情報を更新しました。');
+      setIsEditingCustomer(false);
+      fetchCustomerDetails();
+    } catch (error) {
+      console.error("顧客情報の更新に失敗しました:", error);
+      alert('更新に失敗しました。');
+    }
   };
 
   const handleSaveContact = async (e) => {
@@ -156,23 +174,62 @@ function CustomerDetailPage() {
         <Grid container spacing={3}>
           {/* --- 顧客詳細 --- */}
           <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3, height: '100%' }} elevation={2}>
-              <Typography variant="h6" gutterBottom color="primary" sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 2 }}>
-                顧客情報
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary">担当者名</Typography>
-                <Typography variant="body1">{customer.contact_person_name || '未登録'}</Typography>
+            <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }} elevation={2}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" borderBottom="1px solid #eee" pb={1} mb={2}>
+                <Typography variant="h6" color="primary">顧客情報</Typography>
+                {!isEditingCustomer && (
+                  <Button size="small" variant="outlined" onClick={() => setIsEditingCustomer(true)}>編集</Button>
+                )}
               </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary">Email</Typography>
-                <Typography variant="body1">{customer.email || '未登録'}</Typography>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary">電話番号</Typography>
-                <Typography variant="body1">{customer.phone_number || '未登録'}</Typography>
-              </Box>
-              {/* 今後URLや顧客メモなどを追加する場合はここに配置 */}
+
+              {isEditingCustomer ? (
+                <Box>
+                  <TextField fullWidth size="small" label="会社名" value={editCustomerData.company_name || ''} onChange={e => setEditCustomerData({...editCustomerData, company_name: e.target.value})} sx={{ mb: 2 }} />
+                  <TextField fullWidth size="small" label="担当者名" value={editCustomerData.contact_person_name || ''} onChange={e => setEditCustomerData({...editCustomerData, contact_person_name: e.target.value})} sx={{ mb: 2 }} />
+                  <TextField fullWidth size="small" label="Email" value={editCustomerData.email || ''} onChange={e => setEditCustomerData({...editCustomerData, email: e.target.value})} sx={{ mb: 2 }} />
+                  <TextField fullWidth size="small" label="電話番号" value={editCustomerData.phone_number || ''} onChange={e => setEditCustomerData({...editCustomerData, phone_number: e.target.value})} sx={{ mb: 2 }} />
+                  <TextField fullWidth size="small" label="企業URL" value={editCustomerData.url || ''} onChange={e => setEditCustomerData({...editCustomerData, url: e.target.value})} sx={{ mb: 2 }} placeholder="https://..." />
+                  <TextField fullWidth size="small" label="全体メモ" multiline rows={4} value={editCustomerData.memo || ''} onChange={e => setEditCustomerData({...editCustomerData, memo: e.target.value})} sx={{ mb: 2 }} />
+                  
+                  <Box display="flex" gap={1} mt={2}>
+                    <Button variant="contained" color="primary" onClick={handleSaveCustomer} fullWidth>保存</Button>
+                    <Button variant="outlined" onClick={() => { setIsEditingCustomer(false); setEditCustomerData(customer); }} fullWidth>キャンセル</Button>
+                  </Box>
+                </Box>
+              ) : (
+                <Box sx={{ flexGrow: 1 }}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" color="text.secondary">担当者名</Typography>
+                    <Typography variant="body1">{customer.contact_person_name || '未登録'}</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" color="text.secondary">Email</Typography>
+                    <Typography variant="body1">{customer.email || '未登録'}</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" color="text.secondary">電話番号</Typography>
+                    <Typography variant="body1">{customer.phone_number || '未登録'}</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" color="text.secondary">企業URL</Typography>
+                    {customer.url ? (
+                      <Typography variant="body1">
+                        <MuiLink href={customer.url.startsWith('http') ? customer.url : `https://${customer.url}`} target="_blank" rel="noopener noreferrer">
+                          {customer.url}
+                        </MuiLink>
+                      </Typography>
+                    ) : (
+                      <Typography variant="body1">未登録</Typography>
+                    )}
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" color="text.secondary">全体メモ</Typography>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', bgcolor: '#f8f9fa', p: 1.5, borderRadius: 1, minHeight: '60px', border: '1px solid #eee' }}>
+                      {customer.memo || 'メモはありません'}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
             </Paper>
           </Grid>
 
