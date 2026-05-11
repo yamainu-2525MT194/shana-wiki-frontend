@@ -3,13 +3,15 @@ import api from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button,
-  Link as MuiLink // ★★★ リンクコンポーネントをインポート ★★★
+  Link as MuiLink, TextField, InputAdornment
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { Link } from 'react-router-dom';
 
 function CustomerListPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -25,6 +27,11 @@ function CustomerListPage() {
     };
     fetchCustomers();
   }, []);
+
+  const filteredCustomers = customers.filter(c => 
+    (c.company_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.contact_person_name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
@@ -43,7 +50,25 @@ function CustomerListPage() {
             </Button>
         </Box>
 
-        {customers.length > 0 ? (
+        <Box sx={{ mb: 3 }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="会社名や担当者名で検索..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+
+        {filteredCustomers.length > 0 ? (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -55,11 +80,11 @@ function CustomerListPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {customers.map((customer) => (
+                {filteredCustomers.map((customer) => (
                   <TableRow key={customer.id} hover>
                     <TableCell component="th" scope="row">
                       {/* ★★★ 会社名を詳細ページへのリンクに変更 ★★★ */}
-                      <MuiLink component={Link} to={`/customers/${customer.id}`} underline="hover">
+                      <MuiLink component={Link} to={`/customers/${customer.id}`} underline="hover" sx={{ fontWeight: 'bold' }}>
                         {customer.company_name}
                       </MuiLink>
                     </TableCell>
@@ -72,8 +97,12 @@ function CustomerListPage() {
             </Table>
           </TableContainer>
         ) : (
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography>登録されている顧客がいません。「各種登録ページ」から登録してください。</Typography>
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            {customers.length === 0 ? (
+              <Typography>登録されている顧客がいません。「各種登録ページ」から登録してください。</Typography>
+            ) : (
+              <Typography color="text.secondary">検索条件に一致する顧客が見つかりません。</Typography>
+            )}
           </Paper>
         )}
       </Box>
