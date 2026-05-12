@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from './api';
+import api, { deleteCustomer } from './api';
 import {
   Container, Typography, Box, Paper, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button,
@@ -8,6 +8,7 @@ import {
   TablePagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
 
 function CustomerListPage() {
@@ -89,6 +90,22 @@ function CustomerListPage() {
     }
   };
 
+  const handleDeleteCustomer = async (customerId, companyName) => {
+    if (!window.confirm(`顧客「${companyName}」を削除しますか？\n※この操作は取り消せません。紐づく案件や接触履歴もすべて削除されます。`)) {
+      return;
+    }
+    try {
+      await deleteCustomer(customerId);
+      alert('顧客を削除しました。');
+      // 一覧を再取得
+      const response = await api.get('/customers/');
+      setCustomers(response.data);
+    } catch (error) {
+      console.error("顧客の削除に失敗しました:", error);
+      alert('削除に失敗しました。');
+    }
+  };
+
   const filteredCustomers = customers.filter(c => 
     (c.company_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     (c.contact_person_name || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -165,6 +182,7 @@ function CustomerListPage() {
                       最終接触日
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell align="center">アクション</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -190,6 +208,16 @@ function CustomerListPage() {
                       {customer.last_contact_date 
                         ? new Date(customer.last_contact_date).toLocaleDateString('ja-JP') 
                         : <Typography color="text.secondary" variant="body2">記録なし</Typography>}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button
+                        size="small"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleDeleteCustomer(customer.id, customer.company_name)}
+                      >
+                        削除
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -83,6 +83,12 @@ export const getCustomers = async () => {
   return response.data;
 };
 
+// 顧客削除
+export const deleteCustomer = async (customerId) => {
+  const response = await api.delete(`/customers/${customerId}`);
+  return response.data;
+};
+
 // 案件登録
 export const createOpportunity = async (data) => {
   const response = await api.post('/opportunities/', data);
