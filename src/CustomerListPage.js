@@ -4,7 +4,8 @@ import {
   Container, Typography, Box, Paper, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button,
   Link as MuiLink, TextField, InputAdornment, TableSortLabel,
-  Dialog, DialogTitle, DialogContent, DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TablePagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { Link } from 'react-router-dom';
@@ -14,6 +15,10 @@ function CustomerListPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [order, setOrder] = useState('desc'); // ★ ソート順のステート
+  
+  // ★ ページネーション用ステート
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(100);
 
   // ★ 新規顧客登録ダイアログ用のステート
   const [openDialog, setOpenDialog] = useState(false);
@@ -44,6 +49,15 @@ function CustomerListPage() {
   const handleRequestSort = () => {
     const isAsc = order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const handleOpenDialog = () => setOpenDialog(true);
@@ -91,6 +105,8 @@ function CustomerListPage() {
     }
   });
 
+  const displayedCustomers = sortedCustomers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
   }
@@ -114,7 +130,10 @@ function CustomerListPage() {
             variant="outlined"
             placeholder="会社名や担当者名で検索..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(0);
+            }}
             size="small"
             InputProps={{
               startAdornment: (
@@ -127,7 +146,8 @@ function CustomerListPage() {
         </Box>
 
         {filteredCustomers.length > 0 ? (
-          <TableContainer component={Paper}>
+          <>
+            <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -148,7 +168,7 @@ function CustomerListPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortedCustomers.map((customer) => (
+                {displayedCustomers.map((customer) => (
                   <TableRow key={customer.id} hover>
                     <TableCell component="th" scope="row">
                       {/* ★★★ 会社名を詳細ページへのリンクに変更 ★★★ */}
@@ -176,6 +196,17 @@ function CustomerListPage() {
               </TableBody>
             </Table>
           </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[10, 50, 100]}
+            component="div"
+            count={sortedCustomers.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="表示件数:"
+          />
+          </>
         ) : (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             {customers.length === 0 ? (
